@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roadtrip Gerês → Tomar · Alojamentos · 3–6 Ago 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --bg: #faf6f0;
+    --bg-paper: #ffffff;
+    --bg-sand: #f1e8d9;
+    --text: #2a2521;
+    --text-dim: #6b625a;
+    --text-faint: #a39b91;
+    --line: #e8dfd3;
+    --line-soft: #f0e8dc;
+    --terracotta: #c97b5b;
+    --terracotta-dark: #a85f43;
+    --sage: #7a8b6b;
+    --sage-dark: #5d6e51;
+    --ocean: #3a5269;
+    --ocean-dark: #2a3d50;
+    --gold: #c89d3a;
+    --gold-light: #e8c977;
+    --rose: #d4a59a;
+    --score-high: #5d6e51;
+    --score-mid: #c89d3a;
+    --score-low: #b06a48;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; line-height: 1.5;
+  }
+
+  .hero {
+    padding: 56px 48px 32px;
+    background: linear-gradient(180deg, #f5ede0 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--line);
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; top: -40px; right: -40px;
+    width: 240px; height: 240px; border-radius: 50%;
+    background: radial-gradient(circle, var(--gold-light) 0%, transparent 70%);
+    opacity: 0.35; pointer-events: none;
+  }
+  .hero .eyebrow {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--terracotta); margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', serif; font-weight: 400;
+    font-size: clamp(34px, 5vw, 56px); letter-spacing: -0.02em;
+    line-height: 1.05; margin-bottom: 20px; font-variation-settings: "opsz" 144;
+  }
+  .hero h1 em { font-style: italic; font-weight: 300; color: var(--terracotta); }
+  .hero .meta { display: flex; gap: 32px; font-size: 13px; color: var(--text-dim); flex-wrap: wrap; }
+  .hero .meta b { color: var(--text); font-weight: 500; }
+
+  .container { max-width: 1480px; margin: 0 auto; padding: 36px 48px 80px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 40px; }
+  .kpi {
+    background: var(--bg-paper); border: 1px solid var(--line); border-radius: 12px;
+    padding: 24px; transition: transform .2s, box-shadow .2s;
+  }
+  .kpi:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(42, 37, 33, 0.06); }
+  .kpi .label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px;
+  }
+  .kpi .value {
+    font-family: 'Fraunces', serif; font-weight: 500; font-size: 34px;
+    line-height: 1; color: var(--text); font-variation-settings: "opsz" 144;
+  }
+  .kpi .sub { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+  .kpi.winner { background: linear-gradient(135deg, #fdf6eb 0%, #ffffff 100%); border-color: var(--gold-light); }
+  .kpi.winner .label { color: var(--gold); }
+
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px;
+  }
+  .section-head h2 {
+    font-family: 'Fraunces', serif; font-size: 26px; font-weight: 400;
+    letter-spacing: -0.01em; font-variation-settings: "opsz" 144;
+  }
+  .section-head .hint { font-size: 12px; color: var(--text-faint); font-style: italic; }
+
+  .layout {
+    display: grid; grid-template-columns: 1.15fr 1fr; gap: 24px; margin-bottom: 40px;
+  }
+  @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+
+  .map-wrap {
+    background: var(--bg-paper); border: 1px solid var(--line);
+    border-radius: 12px; overflow: hidden; height: 580px; position: relative;
+  }
+  #map { width: 100%; height: 100%; }
+  .map-legend {
+    position: absolute; bottom: 16px; left: 16px;
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(6px);
+    border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+    font-size: 11px; z-index: 500; box-shadow: 0 4px 12px rgba(42,37,33,0.06);
+  }
+  .map-legend .row { display: flex; align-items: center; gap: 8px; margin: 4px 0; color: var(--text-dim); }
+  .map-legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .filters {
+    background: var(--bg-paper); border: 1px solid var(--line); border-radius: 12px;
+    padding: 28px; display: flex; flex-direction: column; gap: 22px;
+    height: 580px; overflow-y: auto;
+  }
+  .filters h3 {
+    font-family: 'Fraunces', serif; font-size: 20px; font-weight: 500;
+    margin-bottom: -4px; font-variation-settings: "opsz" 144;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 10px; }
+  .filter-group .lbl {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-faint);
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-size: 12px; padding: 7px 12px;
+    background: var(--bg-sand); border: 1px solid transparent; color: var(--text-dim);
+    border-radius: 100px; cursor: pointer; user-select: none;
+    transition: all .15s; font-weight: 500;
+  }
+  .chip:hover { background: var(--line-soft); color: var(--text); }
+  .chip.active { background: var(--terracotta); color: #fff; border-color: var(--terracotta); }
+  .range { display: flex; flex-direction: column; gap: 8px; }
+  .range .vals {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--text-dim); font-weight: 500;
+  }
+  input[type="range"] {
+    -webkit-appearance: none; width: 100%; height: 4px;
+    background: var(--bg-sand); border-radius: 2px; outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    background: var(--terracotta); border-radius: 50%; cursor: pointer;
+    box-shadow: 0 2px 4px rgba(42,37,33,0.2);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 18px; height: 18px; background: var(--terracotta);
+    border-radius: 50%; cursor: pointer; border: none;
+    box-shadow: 0 2px 4px rgba(42,37,33,0.2);
+  }
+  .reset {
+    margin-top: auto; background: transparent; border: 1px solid var(--line);
+    color: var(--text-dim); padding: 11px; font-family: 'Inter', sans-serif;
+    font-size: 12px; cursor: pointer; letter-spacing: 0.06em;
+    border-radius: 8px; transition: all .15s; font-weight: 500;
+  }
+  .reset:hover { color: var(--terracotta); border-color: var(--terracotta); }
+
+  .results-bar {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 20px; font-size: 13px; color: var(--text-dim);
+  }
+  .results-bar .count {
+    color: var(--terracotta); font-weight: 600; font-size: 18px; font-family: 'Fraunces', serif;
+  }
+
+  .cards {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px; margin-bottom: 56px;
+  }
+  .card {
+    background: var(--bg-paper); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s, border-color .2s, box-shadow .25s;
+    cursor: pointer; position: relative;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px rgba(42, 37, 33, 0.08);
+    border-color: var(--line-soft);
+  }
+  .card.focus {
+    border-color: var(--terracotta);
+    box-shadow: 0 0 0 2px var(--terracotta), 0 16px 40px rgba(201, 123, 91, 0.15);
+  }
+
+  .scene { height: 160px; position: relative; overflow: hidden; background: #f3eadd; }
+  .scene svg { width: 100%; height: 100%; display: block; }
+
+  .scene .badge-row {
+    position: absolute; top: 14px; left: 14px; right: 14px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .cat-tag {
+    background: rgba(255,255,255,0.94); backdrop-filter: blur(8px);
+    padding: 5px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; border-radius: 100px;
+  }
+  .price-tag {
+    background: var(--text); color: var(--bg);
+    padding: 6px 11px; border-radius: 100px;
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500;
+  }
+  .price-tag .sub {
+    font-family: 'Inter', sans-serif; font-size: 9px; opacity: 0.7;
+    margin-left: 3px; font-weight: 400;
+  }
+  .score-orb {
+    position: absolute; bottom: -22px; right: 20px;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--bg-paper); border: 2px solid var(--bg-paper);
+    box-shadow: 0 4px 14px rgba(42,37,33,0.12);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .score-orb .num {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; line-height: 1;
+  }
+  .score-orb .lbl {
+    font-size: 8px; color: var(--text-faint); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-top: 1px;
+  }
+  .score-orb.high .num { color: var(--score-high); }
+  .score-orb.mid .num { color: var(--score-mid); }
+  .score-orb.low .num { color: var(--score-low); }
+
+  .body { padding: 28px 22px 20px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+  .name {
+    font-family: 'Fraunces', serif; font-size: 19px; font-weight: 500;
+    line-height: 1.25; color: var(--text); letter-spacing: -0.005em;
+  }
+  .loc {
+    font-size: 12px; color: var(--text-dim);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .loc svg { flex-shrink: 0; }
+
+  .meta-row {
+    display: flex; align-items: center; gap: 10px; padding-top: 8px;
+    border-top: 1px solid var(--line-soft); font-size: 12px;
+  }
+  .booking-score {
+    background: var(--bg-sand); padding: 4px 8px; border-radius: 6px;
+    font-weight: 600; color: var(--ocean);
+  }
+  .stars { color: var(--gold); letter-spacing: 1px; font-size: 13px; }
+  .total { margin-left: auto; color: var(--text-faint); }
+
+  .facilities { display: flex; flex-wrap: wrap; gap: 5px; }
+  .facility {
+    background: var(--bg-sand); padding: 4px 9px; font-size: 10px;
+    color: var(--text-dim); border-radius: 100px; font-weight: 500;
+  }
+  .facility.key { background: var(--terracotta); color: #fff; }
+
+  .score-bars {
+    margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--line-soft);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px;
+  }
+  .score-bar { display: flex; align-items: center; gap: 6px; font-size: 10px; }
+  .score-bar .sb-lbl { width: 56px; color: var(--text-dim); font-weight: 500; }
+  .score-bar .sb-track {
+    flex: 1; height: 4px; background: var(--bg-sand);
+    border-radius: 2px; overflow: hidden;
+  }
+  .score-bar .sb-fill { height: 100%; background: var(--sage); border-radius: 2px; transition: width .4s; }
+  .score-bar .sb-val {
+    font-family: 'Fraunces', serif; font-size: 11px; font-weight: 600;
+    color: var(--text); width: 18px; text-align: right;
+  }
+
+  .cta {
+    background: var(--text); color: var(--bg); padding: 13px;
+    text-align: center; text-decoration: none; font-size: 12px;
+    font-weight: 500; letter-spacing: 0.04em; transition: all .15s;
+  }
+  .cta:hover { background: var(--terracotta); }
+
+  .method-panel {
+    background: linear-gradient(135deg, #fdf6eb 0%, var(--bg-paper) 100%);
+    border: 1px solid var(--line); border-radius: 14px;
+    padding: 32px 36px; margin-bottom: 48px;
+  }
+  .method-panel h3 { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500; margin-bottom: 8px; }
+  .method-panel p { color: var(--text-dim); font-size: 13px; margin-bottom: 16px; }
+  .method-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;
+  }
+  .method-item {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 14px 16px; background: var(--bg-paper);
+    border-radius: 10px; border: 1px solid var(--line-soft);
+  }
+  .method-item .mi-name { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; }
+  .method-item .mi-weight {
+    font-size: 10px; color: var(--terracotta); font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .method-item .mi-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; margin-top: 4px; }
+
+  .table-wrap {
+    background: var(--bg-paper); border: 1px solid var(--line);
+    border-radius: 14px; overflow: hidden;
+  }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1200px; }
+  thead { background: var(--bg-sand); }
+  thead th {
+    padding: 14px 12px; text-align: left; font-weight: 600; color: var(--text);
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; user-select: none; border-bottom: 1px solid var(--line);
+    white-space: nowrap; transition: background .15s;
+  }
+  thead th:hover { background: var(--line-soft); }
+  thead th .sort-arrow {
+    display: inline-block; margin-left: 4px; color: var(--text-faint);
+    font-size: 9px; transition: color .15s;
+  }
+  thead th.sorted .sort-arrow { color: var(--terracotta); }
+  tbody tr { border-bottom: 1px solid var(--line-soft); transition: background .15s; }
+  tbody tr:hover { background: var(--bg-sand); }
+  tbody tr.winner { background: linear-gradient(90deg, #fdf6eb 0%, transparent 100%); }
+  tbody td { padding: 14px 12px; color: var(--text); vertical-align: middle; }
+  tbody td.hotel-name { font-family: 'Fraunces', serif; font-size: 14px; font-weight: 500; }
+  tbody td.hotel-name a { color: var(--text); text-decoration: none; }
+  tbody td.hotel-name a:hover { color: var(--terracotta); }
+  tbody td.score-cell { font-weight: 600; }
+  tbody td.score-cell.high { color: var(--score-high); }
+  tbody td.score-cell.mid { color: var(--score-mid); }
+  tbody td.score-cell.low { color: var(--score-low); }
+  tbody td.total-score { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; }
+  tbody td .badge-rank {
+    display: inline-block; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--bg-sand); color: var(--text-dim);
+    text-align: center; line-height: 22px; font-weight: 600; font-size: 11px;
+    margin-right: 6px;
+  }
+  tbody tr.winner td .badge-rank { background: var(--gold); color: #fff; }
+
+  .leaflet-container { background: var(--bg-paper); font-family: 'Inter', sans-serif; }
+  .leaflet-popup-content-wrapper {
+    background: var(--bg-paper); color: var(--text); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(42,37,33,0.15);
+    padding: 0; border: 1px solid var(--line);
+  }
+  .leaflet-popup-content { margin: 0; padding: 14px 16px; min-width: 220px; }
+  .leaflet-popup-tip { background: var(--bg-paper); }
+  .popup-name { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .popup-loc { font-size: 11px; color: var(--text-dim); margin-bottom: 8px; }
+  .popup-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; font-size: 12px; }
+  .popup-score { background: var(--sage); color: #fff; padding: 3px 7px; border-radius: 100px; font-weight: 600; }
+  .popup-price { font-family: 'Fraunces', serif; color: var(--terracotta); font-weight: 600; }
+  .popup-cta {
+    display: inline-block; background: var(--text); color: var(--bg);
+    padding: 6px 12px; border-radius: 100px; text-decoration: none;
+    font-size: 11px; font-weight: 500; margin-top: 4px;
+  }
+  .popup-cta:hover { background: var(--terracotta); }
+  .leaflet-control-attribution {
+    background: rgba(255,255,255,0.85) !important;
+    font-size: 9px; color: var(--text-faint) !important;
+  }
+  .leaflet-control-zoom a {
+    background: var(--bg-paper) !important; color: var(--text) !important;
+    border: 1px solid var(--line) !important;
+  }
+  .leaflet-control-zoom a:hover { background: var(--bg-sand) !important; color: var(--terracotta) !important; }
+
+  .pin {
+    width: 30px; height: 30px; border-radius: 50%; border: 3px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 11px; font-weight: 700;
+    box-shadow: 0 3px 10px rgba(42,37,33,0.25);
+    cursor: pointer; transition: transform .15s;
+  }
+  .pin:hover { transform: scale(1.18); }
+  .pin.high { background: var(--score-high); }
+  .pin.mid { background: var(--score-mid); }
+  .pin.low { background: var(--score-low); }
+  .pin.endpoint {
+    background: var(--bg-paper); color: var(--text); border-color: var(--terracotta);
+    width: 38px; height: 38px; font-size: 9px; font-weight: 700;
+  }
+
+  footer {
+    margin-top: 60px; padding-top: 28px; border-top: 1px solid var(--line);
+    font-size: 11px; color: var(--text-faint); line-height: 1.8;
+  }
+
+  @media (max-width: 720px) {
+    .hero { padding: 40px 24px 28px; }
+    .container { padding: 28px 24px 60px; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .method-panel { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">Roadtrip 2026</div>
+  <h1>De Gerês <em>a</em> Tomar.<br>14 alojamentos a meio caminho.</h1>
+  <div class="meta">
+    <span><b>3–6 Agosto 2026</b> · 3 noites · 2 adultos</span>
+    <span>Trajeto · <b>Vivenda das Carvalhas → Bons Sons</b></span>
+    <span>Orçamento · <b>≤ €100/noite</b></span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="label">Total opções</div>
+      <div class="value" id="kpi-count">14</div>
+      <div class="sub">alojamentos analisados</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Preço médio</div>
+      <div class="value" id="kpi-avg">€89</div>
+      <div class="sub">por noite</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Melhor preço</div>
+      <div class="value" id="kpi-min">€60</div>
+      <div class="sub" id="kpi-min-name">Vista Castelo</div>
+    </div>
+    <div class="kpi winner">
+      <div class="label">Score · #1</div>
+      <div class="value" id="kpi-best">7.8</div>
+      <div class="sub" id="kpi-best-name">In Gold Spa</div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2>Onde fica cada um</h2>
+    <span class="hint">Clica num pin ou num cartão</span>
+  </div>
+
+  <div class="layout">
+    <div class="map-wrap">
+      <div id="map"></div>
+      <div class="map-legend">
+        <div class="row"><span class="dot" style="background:var(--score-high)"></span>Score ≥ 6.5</div>
+        <div class="row"><span class="dot" style="background:var(--score-mid)"></span>Score 5.7–6.5</div>
+        <div class="row"><span class="dot" style="background:var(--score-low)"></span>Score &lt; 5.7</div>
+        <div class="row"><span class="dot" style="background:transparent; border:2px solid var(--terracotta)"></span>Início / Fim</div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <h3>Filtros</h3>
+
+      <div class="filter-group">
+        <div class="lbl">Categoria</div>
+        <div class="chips" id="cat-chips"></div>
+      </div>
+
+      <div class="filter-group">
+        <div class="lbl">Preço máx / noite</div>
+        <div class="range">
+          <input type="range" id="price-range" min="50" max="140" value="140" step="5">
+          <div class="vals"><span>€50</span><span id="price-val">€140</span></div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="lbl">Score mínimo</div>
+        <div class="range">
+          <input type="range" id="score-range" min="0" max="8" value="0" step="0.1">
+          <div class="vals"><span>Todos</span><span id="score-val">Todos</span></div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="lbl">Avaliação Booking mínima</div>
+        <div class="range">
+          <input type="range" id="rating-range" min="0" max="9.5" value="0" step="0.1">
+          <div class="vals"><span>Todas</span><span id="rating-val">Todas</span></div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="lbl">Ordenar</div>
+        <div class="chips" id="sort-chips">
+          <span class="chip active" data-sort="score-desc">Score ↓</span>
+          <span class="chip" data-sort="price-asc">€ ↑</span>
+          <span class="chip" data-sort="price-desc">€ ↓</span>
+          <span class="chip" data-sort="rating-desc">★ ↓</span>
+        </div>
+      </div>
+
+      <button class="reset" id="reset-btn">Limpar filtros</button>
+    </div>
+  </div>
+
+  <div class="results-bar">
+    <div><span class="count" id="result-count">14</span> alojamentos visíveis</div>
+    <div style="font-style:italic;">preços Booking · descontos Genius aplicam-se ao abrir os links</div>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="method-panel">
+    <h3>O nosso Lifestyle Score</h3>
+    <p>Cada alojamento foi pontuado de 0 a 10 em 7 dimensões. O <b>Score Geral</b> é a média ponderada — quanto maior, melhor o equilíbrio entre preço, comodidades e localização.</p>
+    <div class="method-grid">
+      <div class="method-item">
+        <div class="mi-weight">peso 20%</div>
+        <div class="mi-name">Preço</div>
+        <div class="mi-desc">Quanto mais barato, mais pontos. Escala invertida 0–10.</div>
+      </div>
+      <div class="method-item">
+        <div class="mi-weight">peso 18%</div>
+        <div class="mi-name">Lifestyle</div>
+        <div class="mi-desc">Proximidade a praia OU cidade com restaurantes (o mais alto).</div>
+      </div>
+      <div class="method-item">
+        <div class="mi-weight">peso 18%</div>
+        <div class="mi-name">Piscina</div>
+        <div class="mi-desc">10 = piscina extra (salgada, infinity, aquecida); 0 = sem piscina.</div>
+      </div>
+      <div class="method-item">
+        <div class="mi-weight">peso 12%</div>
+        <div class="mi-name">Trajeto</div>
+        <div class="mi-desc">Alinhamento com A1/IP3/IC8 Gerês→Tomar. Mais perto da autoestrada, mais pontos.</div>
+      </div>
+      <div class="method-item">
+        <div class="mi-weight">peso 12%</div>
+        <div class="mi-name">Avaliação</div>
+        <div class="mi-desc">Score Booking normalizado (0–10).</div>
+      </div>
+      <div class="method-item">
+        <div class="mi-weight">peso 10%</div>
+        <div class="mi-name">Serviços</div>
+        <div class="mi-desc">Receção 24h, express check-in/out, lift, room service.</div>
+      </div>
+      <div class="method-item">
+        <div class="mi-weight">peso 10%</div>
+        <div class="mi-name">Wellness</div>
+        <div class="mi-desc">Spa, jacuzzi, sauna, hammam, massagens.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2>Tabela completa</h2>
+    <span class="hint">Clica num cabeçalho para ordenar</span>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table id="hotel-table">
+        <thead>
+          <tr>
+            <th data-col="name">Hotel <span class="sort-arrow">↕</span></th>
+            <th data-col="city">Localidade <span class="sort-arrow">↕</span></th>
+            <th data-col="perNight" data-type="num">€/n <span class="sort-arrow">↕</span></th>
+            <th data-col="stars" data-type="num">★ <span class="sort-arrow">↕</span></th>
+            <th data-col="score" data-type="num">Booking <span class="sort-arrow">↕</span></th>
+            <th data-col="composite" data-type="num" class="sorted">Score <span class="sort-arrow">↓</span></th>
+            <th data-col="s_lifestyle" data-type="num">Lifestyle <span class="sort-arrow">↕</span></th>
+            <th data-col="s_pool" data-type="num">Piscina <span class="sort-arrow">↕</span></th>
+            <th data-col="s_wellness" data-type="num">Wellness <span class="sort-arrow">↕</span></th>
+            <th data-col="s_services" data-type="num">Serviços <span class="sort-arrow">↕</span></th>
+            <th data-col="s_price" data-type="num">Preço <span class="sort-arrow">↕</span></th>
+            <th data-col="s_route" data-type="num">Trajeto <span class="sort-arrow">↕</span></th>
+            <th>Link</th>
+          </tr>
+        </thead>
+        <tbody id="hotel-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    Dashboard · dados Booking.com (Maio 2026) · datas 3–6 Ago 2026 · 2 adultos · 1 quarto · preços totais para 3 noites<br>
+    Lifestyle Score é uma métrica composta. Dimensões e pesos: ver painel acima. Mapa base: OpenStreetMap via CartoDB Voyager.
+  </footer>
+</div>
+
+<script>
+const HOTELS = [
+  {
+    id: 1, name: "Jantesta Guest House", city: "Coimbra", area: "Subúrbios", cat: "cidade",
+    lat: 40.1681, lng: -8.4545, total: 222.00, score: 7.6, stars: 3,
+    s_lifestyle: 7, s_services: 6, s_pool: 6, s_wellness: 0, s_route: 9,
+    facilities: ["Piscina exterior", "Jardim", "BBQ", "Bilhar"],
+    keyFacs: ["Piscina exterior"],
+    url: "https://www.booking.com/hotel/pt/residencial-jantesta.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 2, name: "Quinta de Vale Escuro", city: "Lousã", area: "Foz de Arouce", cat: "rural",
+    lat: 40.1639, lng: -8.2600, total: 225.00, score: 9.4, stars: 4,
+    s_lifestyle: 5, s_services: 5, s_pool: 5, s_wellness: 0, s_route: 7,
+    facilities: ["Piscina exterior", "Jardim", "BBQ", "Cozinha partilhada"],
+    keyFacs: ["Piscina exterior", "Rural"],
+    url: "https://www.booking.com/hotel/pt/quinta-de-vale-escuro.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 3, name: "Colina do Elétrico", city: "Figueira da Foz", area: "Buarcos", cat: "praia",
+    lat: 40.1816, lng: -8.9010, total: 268.50, score: 8.5, stars: 3,
+    s_lifestyle: 9, s_services: 5, s_pool: 6, s_wellness: 0, s_route: 5,
+    facilities: ["Frente à praia", "Piscina com vista", "Jardim", "Terraço"],
+    keyFacs: ["Frente à praia", "Piscina com vista"],
+    url: "https://www.booking.com/hotel/pt/colina-do-electrico.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 4, name: "Vila Duparchy", city: "Luso", area: "Vila termal", cat: "termal",
+    lat: 40.3890, lng: -8.3846, total: 270.00, score: 8.7, stars: 4,
+    s_lifestyle: 5, s_services: 5, s_pool: 5, s_wellness: 0, s_route: 10,
+    facilities: ["Piscina exterior", "Jardim", "Bar", "Pet-friendly"],
+    keyFacs: ["Piscina exterior", "Turismo habitação"],
+    url: "https://www.booking.com/hotel/pt/vila-duparchy.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 5, name: "Vila Aurora", city: "Luso", area: "Vila termal", cat: "termal",
+    lat: 40.3841, lng: -8.3811, total: 285.00, score: 8.7, stars: 4,
+    s_lifestyle: 5, s_services: 6, s_pool: 7, s_wellness: 6, s_route: 10,
+    facilities: ["Piscina salgada", "Jacuzzi", "Ténis", "Massagens"],
+    keyFacs: ["Piscina salgada", "Jacuzzi"],
+    url: "https://www.booking.com/hotel/pt/vila-aurora-turismo-de-habitacao.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 6, name: "Casa dos Carvalhos", city: "Coimbra", area: "Centro", cat: "cidade",
+    lat: 40.2136, lng: -8.4231, total: 291.00, score: 9.0, stars: 4,
+    s_lifestyle: 9, s_services: 7, s_pool: 8, s_wellness: 0, s_route: 9,
+    facilities: ["Piscina cobertura salgada", "Terraço", "AC", "Estacionamento"],
+    keyFacs: ["Piscina cobertura", "Centro Coimbra"],
+    url: "https://www.booking.com/hotel/pt/casa-dos-carvalhos-quarto-manga.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 7, name: "Quintal de Alem do Ribeiro", city: "Lousã", area: "Ceira dos Vales", cat: "rural",
+    lat: 40.1460, lng: -8.2539, total: 330.00, score: 9.4, stars: 4,
+    s_lifestyle: 4, s_services: 6, s_pool: 6, s_wellness: 1, s_route: 6,
+    facilities: ["Piscina exterior", "Jardim", "BBQ", "Capela"],
+    keyFacs: ["Piscina exterior", "Turismo rural"],
+    url: "https://www.booking.com/hotel/pt/quintal-de-alem-do-ribeiro-turismo-rural-lda.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 8, name: "Fragas do Cabril Eco Lodge", city: "Lousã", area: "Serra da Lousã", cat: "wellness",
+    lat: 40.1762, lng: -8.1790, total: 378.00, score: 9.5, stars: 4,
+    s_lifestyle: 3, s_services: 6, s_pool: 8, s_wellness: 10, s_route: 4,
+    facilities: ["Piscina aquecida", "Spa", "Sauna", "Hammam", "Jacuzzi"],
+    keyFacs: ["Spa completo", "Piscina aquecida", "Eco-lodge"],
+    url: "https://www.booking.com/hotel/pt/fragas-do-cabril-eco-amp-wellness-lodge.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 9, name: "Quinta Quatro Ventos", city: "Sertã", area: "Galeguia", cat: "rural",
+    lat: 39.7985, lng: -8.1670, total: 282.00, score: 9.5, stars: 3,
+    s_lifestyle: 4, s_services: 5, s_pool: 8, s_wellness: 4, s_route: 7,
+    facilities: ["Piscina salgada", "Jardim", "BBQ", "Vista"],
+    keyFacs: ["Piscina salgada", "Quinta rural"],
+    url: "https://www.booking.com/hotel/pt/quinta-quatro-ventos.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 10, name: "Hotel Larverde", city: "Sertã", area: "Centro Sertã", cat: "cidade",
+    lat: 39.7989, lng: -8.0913, total: 256.50, score: 8.9, stars: 3,
+    s_lifestyle: 5, s_services: 8, s_pool: 8, s_wellness: 2, s_route: 7,
+    facilities: ["Piscina all-year", "Piscina crianças", "Ténis", "Fitness", "Bilhar"],
+    keyFacs: ["Piscina all-year", "Família-friendly"],
+    url: "https://www.booking.com/hotel/pt/larverde.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 11, name: "Vista Castelo", city: "Sertã", area: "Centro Sertã", cat: "cidade",
+    lat: 39.8058, lng: -8.0987, total: 180.00, score: 7.8, stars: 3,
+    s_lifestyle: 6, s_services: 5, s_pool: 7, s_wellness: 0, s_route: 7,
+    facilities: ["Piscina salgada", "Pool with view", "Jardim", "Terraço"],
+    keyFacs: ["Piscina salgada", "Vista castelo"],
+    url: "https://www.booking.com/hotel/pt/vista-castelo-serta.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 12, name: "In Gold Hotel & Spa", city: "Águeda", area: "Centro Águeda", cat: "wellness",
+    lat: 40.5742, lng: -8.4385, total: 261.45, score: 7.1, stars: 4,
+    s_lifestyle: 6, s_services: 8, s_pool: 10, s_wellness: 9, s_route: 10,
+    facilities: ["Rooftop infinity pool", "Piscina aquecida", "Spa", "Sauna", "Hammam"],
+    keyFacs: ["Rooftop infinity", "Spa completo"],
+    url: "https://www.booking.com/hotel/pt/in-gold-amp-spa.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 13, name: "Casinha da Ladeira", city: "Penacova", area: "Azenha do Rio", cat: "rural",
+    lat: 40.2705, lng: -8.2752, total: 183.00, score: 9.2, stars: 4,
+    s_lifestyle: 6, s_services: 4, s_pool: 0, s_wellness: 0, s_route: 6,
+    facilities: ["Ténis", "Canoagem", "Caminhadas", "Praia fluvial Mondego"],
+    keyFacs: ["Praia fluvial", "Rural"],
+    url: "https://www.booking.com/hotel/pt/casinha-da-ladeira-penacova.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 14, name: "Costanova Surfhouse", city: "Ílhavo", area: "Gafanha da Encarnação", cat: "praia",
+    lat: 40.6254, lng: -8.7276, total: 300.00, score: null, stars: 3,
+    s_lifestyle: 9, s_services: 4, s_pool: 6, s_wellness: 0, s_route: 7,
+    facilities: ["Piscina exterior", "Costa Nova praia", "Surf", "Jardim"],
+    keyFacs: ["Costa Nova praia", "Piscina"],
+    url: "https://www.booking.com/hotel/pt/costa-nova-surfhouse.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  }
+];
+
+const NIGHTS = 3;
+const WEIGHTS = {
+  s_lifestyle: 0.18, s_services: 0.10, s_pool: 0.18, s_wellness: 0.10,
+  s_price: 0.20, s_rating: 0.12, s_route: 0.12
+};
+
+HOTELS.forEach(h => {
+  h.perNight = h.total / NIGHTS;
+  h.s_price = Math.max(0, Math.min(10, (150 - h.perNight) / (150 - 40) * 10));
+  h.s_rating = h.score !== null ? h.score : 7.0;
+  h.composite =
+    h.s_lifestyle * WEIGHTS.s_lifestyle +
+    h.s_services * WEIGHTS.s_services +
+    h.s_pool * WEIGHTS.s_pool +
+    h.s_wellness * WEIGHTS.s_wellness +
+    h.s_price * WEIGHTS.s_price +
+    h.s_rating * WEIGHTS.s_rating +
+    h.s_route * WEIGHTS.s_route;
+});
+
+const ENDPOINTS = [
+  { name: "Vivenda das Carvalhas", area: "Gerês (Amiar)", lat: 41.7480, lng: -7.8395, label: "GERÊS" },
+  { name: "Bons Sons", area: "Cem Soldos, Tomar", lat: 39.5949, lng: -8.4105, label: "TOMAR" }
+];
+
+const CATEGORIES = {
+  cidade:   { label: "Cidade",        color: "#3a5269" },
+  praia:    { label: "Praia",         color: "#5b8aa3" },
+  termal:   { label: "Vila Termal",   color: "#c89d3a" },
+  rural:    { label: "Rural",         color: "#7a8b6b" },
+  wellness: { label: "Wellness",      color: "#c97b5b" }
+};
+
+const SCENES = {
+  cidade: `<svg viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="skyC" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#fdf0d8"/><stop offset="100%" stop-color="#f1e8d9"/></linearGradient></defs><rect width="400" height="160" fill="url(#skyC)"/><circle cx="320" cy="40" r="20" fill="#e8c977" opacity="0.6"/><rect x="20" y="90" width="40" height="70" fill="#d4a59a"/><rect x="65" y="72" width="22" height="88" fill="#c97b5b"/><rect x="92" y="55" width="50" height="105" fill="#b06a48"/><polygon points="92,55 117,32 142,55" fill="#a85f43"/><rect x="148" y="82" width="30" height="78" fill="#c89d3a" opacity="0.8"/><rect x="183" y="65" width="60" height="95" fill="#d4a59a"/><rect x="248" y="88" width="35" height="72" fill="#c97b5b"/><rect x="288" y="58" width="45" height="102" fill="#7a8b6b" opacity="0.9"/><rect x="338" y="98" width="44" height="62" fill="#a85f43"/><g fill="#fdf0d8" opacity="0.85"><rect x="28" y="100" width="3" height="3"/><rect x="38" y="115" width="3" height="3"/><rect x="100" y="75" width="3" height="3"/><rect x="115" y="92" width="3" height="3"/><rect x="130" y="110" width="3" height="3"/><rect x="195" y="85" width="3" height="3"/><rect x="215" y="105" width="3" height="3"/><rect x="235" y="125" width="3" height="3"/><rect x="300" y="80" width="3" height="3"/><rect x="320" y="105" width="3" height="3"/></g><path d="M 0 152 Q 100 146 200 152 T 400 152 L 400 160 L 0 160 Z" fill="#5b8aa3" opacity="0.5"/></svg>`,
+  praia: `<svg viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="skyP" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#fde9c8"/><stop offset="50%" stop-color="#f3dcc0"/><stop offset="100%" stop-color="#e8c2a0"/></linearGradient></defs><rect width="400" height="160" fill="url(#skyP)"/><circle cx="200" cy="62" r="28" fill="#e8c977" opacity="0.95"/><circle cx="200" cy="62" r="42" fill="none" stroke="#e8c977" stroke-opacity="0.4" stroke-width="1.5"/><circle cx="200" cy="62" r="56" fill="none" stroke="#e8c977" stroke-opacity="0.2" stroke-width="1"/><path d="M 0 105 Q 50 96 100 105 T 200 105 T 300 105 T 400 105 L 400 160 L 0 160 Z" fill="#5b8aa3" opacity="0.7"/><path d="M 0 118 Q 50 110 100 118 T 200 118 T 300 118 T 400 118 L 400 160 L 0 160 Z" fill="#3a5269" opacity="0.55"/><path d="M 0 130 Q 50 124 100 130 T 200 130 T 300 130 T 400 130 L 400 160 L 0 160 Z" fill="#2a3d50"/><path d="M 20 105 Q 35 102 50 105" fill="none" stroke="#fdf0d8" stroke-opacity="0.7" stroke-width="0.9"/><path d="M 220 105 Q 235 102 250 105" fill="none" stroke="#fdf0d8" stroke-opacity="0.7" stroke-width="0.9"/><path d="M 310 105 Q 325 102 340 105" fill="none" stroke="#fdf0d8" stroke-opacity="0.7" stroke-width="0.9"/></svg>`,
+  termal: `<svg viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="skyT" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#f5ede0"/><stop offset="100%" stop-color="#e8dfd3"/></linearGradient></defs><rect width="400" height="160" fill="url(#skyT)"/><path d="M 0 95 L 30 75 L 50 90 L 80 60 L 110 82 L 140 65 L 170 85 L 200 68 L 230 88 L 260 65 L 290 82 L 320 68 L 350 86 L 400 75 L 400 160 L 0 160 Z" fill="#7a8b6b"/><path d="M 0 110 L 30 95 L 60 102 L 100 88 L 140 100 L 180 92 L 220 105 L 260 92 L 300 105 L 340 98 L 400 102 L 400 160 L 0 160 Z" fill="#5d6e51"/><rect x="155" y="85" width="90" height="55" fill="#fdf0d8"/><polygon points="155,85 200,55 245,85" fill="#c97b5b"/><rect x="195" y="108" width="10" height="32" fill="#c89d3a" opacity="0.85"/><rect x="170" y="100" width="7" height="9" fill="#c89d3a" opacity="0.7"/><rect x="183" y="100" width="7" height="9" fill="#c89d3a" opacity="0.7"/><rect x="212" y="100" width="7" height="9" fill="#c89d3a" opacity="0.7"/><rect x="225" y="100" width="7" height="9" fill="#c89d3a" opacity="0.7"/><rect x="0" y="140" width="400" height="20" fill="#4a5840"/></svg>`,
+  rural: `<svg viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="skyR" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#fdf0d8"/><stop offset="100%" stop-color="#f0e0c0"/></linearGradient></defs><rect width="400" height="160" fill="url(#skyR)"/><path d="M 0 90 Q 60 70 120 85 T 240 80 T 400 85 L 400 160 L 0 160 Z" fill="#a8b890"/><path d="M 0 108 Q 80 92 160 102 T 320 100 T 400 105 L 400 160 L 0 160 Z" fill="#7a8b6b"/><rect x="120" y="100" width="80" height="38" fill="#e8d5b0"/><polygon points="120,100 160,78 200,100" fill="#c97b5b"/><rect x="200" y="108" width="40" height="30" fill="#e8d5b0"/><polygon points="200,108 220,92 240,108" fill="#c97b5b"/><rect x="155" y="118" width="9" height="20" fill="#c89d3a"/><rect x="135" y="112" width="7" height="7" fill="#c89d3a" opacity="0.7"/><rect x="175" y="112" width="7" height="7" fill="#c89d3a" opacity="0.7"/><circle cx="50" cy="125" r="12" fill="#5d6e51"/><circle cx="78" cy="130" r="9" fill="#5d6e51"/><circle cx="280" cy="128" r="10" fill="#5d6e51"/><circle cx="320" cy="125" r="13" fill="#5d6e51"/><circle cx="360" cy="130" r="9" fill="#5d6e51"/><rect x="0" y="145" width="400" height="15" fill="#4a5840"/></svg>`,
+  wellness: `<svg viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="skyW" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#fde9d4"/><stop offset="100%" stop-color="#f0d8c4"/></linearGradient></defs><rect width="400" height="160" fill="url(#skyW)"/><polygon points="0,105 60,52 120,90 180,42 250,95 320,58 400,98 400,160 0,160" fill="#5d6e51"/><polygon points="0,118 70,80 140,108 210,75 280,112 350,88 400,118 400,160 0,160" fill="#4a5840"/><ellipse cx="100" cy="115" rx="62" ry="8" fill="#fdf0d8" opacity="0.35"/><ellipse cx="280" cy="120" rx="80" ry="6" fill="#fdf0d8" opacity="0.35"/><ellipse cx="200" cy="145" rx="135" ry="9" fill="#3a5269" opacity="0.85"/><ellipse cx="200" cy="143" rx="105" ry="5" fill="#5b8aa3" opacity="0.5"/><path d="M 150 128 Q 156 116 152 105" stroke="#fdf0d8" stroke-opacity="0.5" stroke-width="1.2" fill="none"/><path d="M 240 132 Q 247 119 244 108" stroke="#fdf0d8" stroke-opacity="0.5" stroke-width="1.2" fill="none"/><path d="M 200 124 Q 207 110 203 98" stroke="#fdf0d8" stroke-opacity="0.6" stroke-width="1.2" fill="none"/></svg>`
+};
+
+const STATE = { cat: "all", maxPrice: 140, minScore: 0, minRating: 0, sort: "score-desc", focusId: null };
+
+function scoreClass(s) { if (s >= 6.5) return "high"; if (s >= 5.7) return "mid"; return "low"; }
+function subScoreClass(s) { if (s >= 7) return "high"; if (s >= 4) return "mid"; return "low"; }
+
+function updateKPIs() {
+  const avgN = HOTELS.reduce((s, h) => s + h.perNight, 0) / HOTELS.length;
+  const minH = [...HOTELS].sort((a, b) => a.perNight - b.perNight)[0];
+  const bestH = [...HOTELS].sort((a, b) => b.composite - a.composite)[0];
+  document.getElementById("kpi-count").textContent = HOTELS.length;
+  document.getElementById("kpi-avg").textContent = "€" + Math.round(avgN);
+  document.getElementById("kpi-min").textContent = "€" + Math.round(minH.perNight);
+  document.getElementById("kpi-min-name").textContent = minH.name;
+  document.getElementById("kpi-best").textContent = bestH.composite.toFixed(1);
+  document.getElementById("kpi-best-name").textContent = bestH.name;
+}
+updateKPIs();
+
+const catChipsEl = document.getElementById("cat-chips");
+const allCat = { all: { label: "Todas", color: "#c97b5b" }, ...CATEGORIES };
+Object.entries(allCat).forEach(([key, val]) => {
+  const c = document.createElement("span");
+  c.className = "chip" + (key === "all" ? " active" : "");
+  c.textContent = val.label;
+  c.dataset.cat = key;
+  c.onclick = () => {
+    document.querySelectorAll("#cat-chips .chip").forEach(x => x.classList.remove("active"));
+    c.classList.add("active");
+    STATE.cat = key;
+    render();
+  };
+  catChipsEl.appendChild(c);
+});
+
+document.getElementById("price-range").oninput = (e) => {
+  STATE.maxPrice = +e.target.value;
+  document.getElementById("price-val").textContent = "€" + STATE.maxPrice;
+  render();
+};
+document.getElementById("score-range").oninput = (e) => {
+  STATE.minScore = +e.target.value;
+  document.getElementById("score-val").textContent = STATE.minScore === 0 ? "Todos" : STATE.minScore.toFixed(1) + "+";
+  render();
+};
+document.getElementById("rating-range").oninput = (e) => {
+  STATE.minRating = +e.target.value;
+  document.getElementById("rating-val").textContent = STATE.minRating === 0 ? "Todas" : STATE.minRating.toFixed(1) + "+";
+  render();
+};
+document.querySelectorAll("#sort-chips .chip").forEach(c => {
+  c.onclick = () => {
+    document.querySelectorAll("#sort-chips .chip").forEach(x => x.classList.remove("active"));
+    c.classList.add("active");
+    STATE.sort = c.dataset.sort;
+    render();
+  };
+});
+document.getElementById("reset-btn").onclick = () => {
+  STATE.cat = "all"; STATE.maxPrice = 140; STATE.minScore = 0; STATE.minRating = 0; STATE.sort = "score-desc"; STATE.focusId = null;
+  document.querySelectorAll("#cat-chips .chip").forEach(x => x.classList.toggle("active", x.dataset.cat === "all"));
+  document.querySelectorAll("#sort-chips .chip").forEach(x => x.classList.toggle("active", x.dataset.sort === "score-desc"));
+  document.getElementById("price-range").value = 140;
+  document.getElementById("score-range").value = 0;
+  document.getElementById("rating-range").value = 0;
+  document.getElementById("price-val").textContent = "€140";
+  document.getElementById("score-val").textContent = "Todos";
+  document.getElementById("rating-val").textContent = "Todas";
+  render();
+};
+
+const map = L.map("map", { zoomControl: true, attributionControl: true }).setView([40.4, -8.3], 8);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+  attribution: '&copy; OpenStreetMap, &copy; CARTO', maxZoom: 18
+}).addTo(map);
+
+L.polyline([
+  [ENDPOINTS[0].lat, ENDPOINTS[0].lng],
+  [ENDPOINTS[1].lat, ENDPOINTS[1].lng]
+], { color: "#c97b5b", weight: 2, dashArray: "8 6", opacity: 0.65 }).addTo(map);
+
+ENDPOINTS.forEach(e => {
+  const html = `<div class="pin endpoint">${e.label}</div>`;
+  const icon = L.divIcon({ html, className: "", iconSize: [38, 38], iconAnchor: [19, 19] });
+  L.marker([e.lat, e.lng], { icon }).addTo(map)
+    .bindPopup(`<div class="popup-name">${e.name}</div><div class="popup-loc">${e.area}</div>`);
+});
+
+const hotelMarkers = {};
+HOTELS.forEach(h => {
+  const cls = scoreClass(h.composite);
+  const html = `<div class="pin ${cls}">${h.composite.toFixed(1)}</div>`;
+  const icon = L.divIcon({ html, className: "", iconSize: [30, 30], iconAnchor: [15, 15] });
+  const m = L.marker([h.lat, h.lng], { icon }).addTo(map);
+  m.bindPopup(`
+    <div class="popup-name">${h.name}</div>
+    <div class="popup-loc">${h.area}, ${h.city}</div>
+    <div class="popup-row">
+      <span class="popup-score">Score ${h.composite.toFixed(1)}</span>
+      <span class="popup-price">€${h.perNight.toFixed(0)}/n</span>
+    </div>
+    <div class="popup-loc">${h.score ? "★ " + h.score.toFixed(1) + " · " : ""}${h.stars}★ Booking</div>
+    <a class="popup-cta" href="${h.url}" target="_blank">Ver no Booking</a>
+  `);
+  m.on("click", () => {
+    STATE.focusId = h.id;
+    render();
+    const el = document.getElementById("card-" + h.id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  hotelMarkers[h.id] = m;
+});
+
+function renderBar(label, val) {
+  const pct = Math.min(100, val * 10);
+  return `<div class="score-bar"><span class="sb-lbl">${label}</span><span class="sb-track"><span class="sb-fill" style="width:${pct}%"></span></span><span class="sb-val">${val.toFixed(1)}</span></div>`;
+}
+
+function renderCard(h) {
+  const sc = scoreClass(h.composite);
+  const cat = CATEGORIES[h.cat];
+  return `
+    <div class="card" id="card-${h.id}" data-id="${h.id}">
+      <div class="scene">
+        ${SCENES[h.cat]}
+        <div class="badge-row">
+          <span class="cat-tag" style="color:${cat.color}">${cat.label}</span>
+          <span class="price-tag">€${h.perNight.toFixed(0)}<span class="sub">/n</span></span>
+        </div>
+        <div class="score-orb ${sc}">
+          <span class="num">${h.composite.toFixed(1)}</span>
+          <span class="lbl">score</span>
+        </div>
+      </div>
+      <div class="body">
+        <div class="name">${h.name}</div>
+        <div class="loc">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${h.area} · ${h.city}
+        </div>
+        <div class="facilities">
+          ${h.facilities.map(f => `<span class="facility${h.keyFacs.includes(f) ? " key" : ""}">${f}</span>`).join("")}
+        </div>
+        <div class="meta-row">
+          <span class="booking-score">${h.score !== null ? "★ " + h.score.toFixed(1) : "n/a"}</span>
+          <span class="stars">${"★".repeat(h.stars)}${'<span style="opacity:0.25">★</span>'.repeat(5 - h.stars)}</span>
+          <span class="total">€${h.total.toFixed(0)} / 3n</span>
+        </div>
+        <div class="score-bars">
+          ${renderBar("Lifestyle", h.s_lifestyle)}
+          ${renderBar("Piscina", h.s_pool)}
+          ${renderBar("Wellness", h.s_wellness)}
+          ${renderBar("Serviços", h.s_services)}
+          ${renderBar("Preço", h.s_price)}
+          ${renderBar("Trajeto", h.s_route)}
+        </div>
+      </div>
+      <a class="cta" href="${h.url}" target="_blank" onclick="event.stopPropagation()">Ver no Booking →</a>
+    </div>
+  `;
+}
+
+function applyFilters(list) {
+  return list.filter(h =>
+    (STATE.cat === "all" || h.cat === STATE.cat) &&
+    h.perNight <= STATE.maxPrice &&
+    h.composite >= STATE.minScore &&
+    (STATE.minRating === 0 || (h.score !== null && h.score >= STATE.minRating))
+  );
+}
+function applySort(list) {
+  const copy = [...list];
+  if (STATE.sort === "price-asc") copy.sort((a, b) => a.perNight - b.perNight);
+  else if (STATE.sort === "price-desc") copy.sort((a, b) => b.perNight - a.perNight);
+  else if (STATE.sort === "rating-desc") copy.sort((a, b) => (b.score || 0) - (a.score || 0));
+  else if (STATE.sort === "score-desc") copy.sort((a, b) => b.composite - a.composite);
+  return copy;
+}
+
+function render() {
+  const filtered = applyFilters(HOTELS);
+  const sorted = applySort(filtered);
+  const filteredIds = new Set(filtered.map(h => h.id));
+
+  document.getElementById("cards").innerHTML = sorted.map(renderCard).join("");
+  document.getElementById("result-count").textContent = sorted.length;
+
+  document.querySelectorAll(".card").forEach(card => {
+    card.onclick = (e) => {
+      if (e.target.closest(".cta")) return;
+      const id = +card.dataset.id;
+      const h = HOTELS.find(x => x.id === id);
+      map.flyTo([h.lat, h.lng], 11, { duration: 0.8 });
+      hotelMarkers[id].openPopup();
+      STATE.focusId = id;
+      document.querySelectorAll(".card").forEach(c => c.classList.toggle("focus", +c.dataset.id === id));
+    };
+  });
+
+  HOTELS.forEach(h => {
+    const m = hotelMarkers[h.id];
+    if (filteredIds.has(h.id)) {
+      if (!map.hasLayer(m)) m.addTo(map);
+    } else {
+      if (map.hasLayer(m)) map.removeLayer(m);
+    }
+  });
+
+  if (STATE.focusId !== null) {
+    document.querySelectorAll(".card").forEach(c => c.classList.toggle("focus", +c.dataset.id === STATE.focusId));
+  }
+}
+render();
+
+const TABLE_STATE = { col: "composite", dir: "desc", type: "num" };
+
+function renderTable() {
+  const sorted = [...HOTELS].sort((a, b) => {
+    let av = a[TABLE_STATE.col];
+    let bv = b[TABLE_STATE.col];
+    if (av === null) av = TABLE_STATE.type === "num" ? -Infinity : "";
+    if (bv === null) bv = TABLE_STATE.type === "num" ? -Infinity : "";
+    if (TABLE_STATE.type === "num") return TABLE_STATE.dir === "asc" ? av - bv : bv - av;
+    return TABLE_STATE.dir === "asc" ? String(av).localeCompare(String(bv), "pt") : String(bv).localeCompare(String(av), "pt");
+  });
+
+  const isRankedView = TABLE_STATE.col === "composite" && TABLE_STATE.dir === "desc";
+  const tbody = document.getElementById("hotel-tbody");
+  tbody.innerHTML = sorted.map((h, idx) => {
+    const rank = idx + 1;
+    const sc = scoreClass(h.composite);
+    const isWinner = isRankedView && idx === 0;
+    return `
+      <tr class="${isWinner ? "winner" : ""}">
+        <td class="hotel-name"><a href="${h.url}" target="_blank">${isRankedView ? `<span class="badge-rank">${rank}</span>` : ""}${h.name}</a></td>
+        <td>${h.area}, ${h.city}</td>
+        <td>€${h.perNight.toFixed(0)}</td>
+        <td>${"★".repeat(h.stars)}</td>
+        <td>${h.score !== null ? h.score.toFixed(1) : "—"}</td>
+        <td class="total-score score-cell ${sc}">${h.composite.toFixed(2)}</td>
+        <td class="score-cell ${subScoreClass(h.s_lifestyle)}">${h.s_lifestyle.toFixed(1)}</td>
+        <td class="score-cell ${subScoreClass(h.s_pool)}">${h.s_pool.toFixed(1)}</td>
+        <td class="score-cell ${subScoreClass(h.s_wellness)}">${h.s_wellness.toFixed(1)}</td>
+        <td class="score-cell ${subScoreClass(h.s_services)}">${h.s_services.toFixed(1)}</td>
+        <td class="score-cell ${subScoreClass(h.s_price)}">${h.s_price.toFixed(1)}</td>
+        <td class="score-cell ${subScoreClass(h.s_route)}">${h.s_route.toFixed(1)}</td>
+        <td><a href="${h.url}" target="_blank" style="color:var(--terracotta); font-weight:500; text-decoration:none;">↗</a></td>
+      </tr>
+    `;
+  }).join("");
+
+  document.querySelectorAll("#hotel-table thead th").forEach(th => {
+    th.classList.remove("sorted");
+    const arrow = th.querySelector(".sort-arrow");
+    if (!arrow) return;
+    if (th.dataset.col === TABLE_STATE.col) {
+      th.classList.add("sorted");
+      arrow.textContent = TABLE_STATE.dir === "asc" ? "↑" : "↓";
+    } else {
+      arrow.textContent = "↕";
+    }
+  });
+}
+
+document.querySelectorAll("#hotel-table thead th[data-col]").forEach(th => {
+  th.onclick = () => {
+    const col = th.dataset.col;
+    const type = th.dataset.type || "str";
+    if (TABLE_STATE.col === col) {
+      TABLE_STATE.dir = TABLE_STATE.dir === "asc" ? "desc" : "asc";
+    } else {
+      TABLE_STATE.col = col;
+      TABLE_STATE.type = type;
+      TABLE_STATE.dir = type === "num" ? "desc" : "asc";
+    }
+    renderTable();
+  };
+});
+
+renderTable();
+</script>
+</body>
+</html>
