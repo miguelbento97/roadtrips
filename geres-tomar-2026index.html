@@ -403,7 +403,7 @@
 
 <div class="hero">
   <div class="eyebrow">Roadtrip 2026</div>
-  <h1>De Gerês <em>a</em> Tomar.<br>14 alojamentos a meio caminho.</h1>
+  <h1>De Gerês <em>a</em> Tomar.<br>20 hipóteses pelo centro.</h1>
   <div class="meta">
     <span><b>3–6 Agosto 2026</b> · 3 noites · 2 adultos</span>
     <span>Trajeto · <b>Vivenda das Carvalhas → Bons Sons</b></span>
@@ -416,7 +416,7 @@
   <div class="kpis">
     <div class="kpi">
       <div class="label">Total opções</div>
-      <div class="value" id="kpi-count">14</div>
+      <div class="value" id="kpi-count">20</div>
       <div class="sub">alojamentos analisados</div>
     </div>
     <div class="kpi">
@@ -463,8 +463,8 @@
       <div class="filter-group">
         <div class="lbl">Preço máx / noite</div>
         <div class="range">
-          <input type="range" id="price-range" min="50" max="140" value="140" step="5">
-          <div class="vals"><span>€50</span><span id="price-val">€140</span></div>
+          <input type="range" id="price-range" min="50" max="160" value="160" step="5">
+          <div class="vals"><span>€50</span><span id="price-val">€160</span></div>
         </div>
       </div>
 
@@ -696,6 +696,54 @@ const HOTELS = [
     facilities: ["Piscina exterior", "Costa Nova praia", "Surf", "Jardim"],
     keyFacs: ["Costa Nova praia", "Piscina"],
     url: "https://www.booking.com/hotel/pt/costa-nova-surfhouse.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 15, name: "Abrigo da Montanha Hotel Rural", city: "Seia", area: "Sabugueiro · Serra da Estrela", cat: "wellness",
+    lat: 40.4046, lng: -7.6452, total: 236.64, score: 8.7, stars: 4,
+    s_lifestyle: 4, s_services: 7, s_pool: 0, s_wellness: 6, s_route: 3,
+    facilities: ["Spa", "Massagens", "Spa lounge", "Restaurante", "Lift"],
+    keyFacs: ["Spa", "Serra da Estrela"],
+    url: "https://www.booking.com/hotel/pt/abrigo-da-montanha-rural.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 16, name: "Luna Hotel de Tábua", city: "Tábua", area: "Vale do Dão", cat: "wellness",
+    lat: 40.3612, lng: -8.0282, total: 318.75, score: 8.8, stars: 4,
+    s_lifestyle: 5, s_services: 8, s_pool: 8, s_wellness: 7, s_route: 6,
+    facilities: ["Spa", "Sauna", "Jacuzzi", "Piscina interior aquecida", "Piscina exterior", "Fitness"],
+    keyFacs: ["Spa + sauna + jacuzzi", "Piscina aquecida"],
+    url: "https://www.booking.com/hotel/pt/luna-turismo-de-tabua.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 17, name: "INATEL Manteigas", city: "Manteigas", area: "Vale do Zêzere · Serra da Estrela", cat: "wellness",
+    lat: 40.3857, lng: -7.5450, total: 331.86, score: null, stars: 3,
+    s_lifestyle: 4, s_services: 7, s_pool: 9, s_wellness: 8, s_route: 2,
+    facilities: ["Spa", "Jacuzzi", "Piscina infinity", "Hot spring bath", "Piscina interior + exterior"],
+    keyFacs: ["Piscina infinity", "Hot spring bath", "Serra da Estrela"],
+    url: "https://www.booking.com/hotel/pt/inatel-manteigas.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 18, name: "Grande Hotel das Caldas da Felgueira", city: "Caldas da Felgueira", area: "Termas · Nelas", cat: "wellness",
+    lat: 40.4886, lng: -7.8622, total: 385.89, score: 8.7, stars: 4,
+    s_lifestyle: 4, s_services: 8, s_pool: 6, s_wellness: 7, s_route: 4,
+    facilities: ["Spa", "Hot spring bath", "Piscina exterior", "Ténis", "Fitness", "Bilhar"],
+    keyFacs: ["Hot spring bath", "Termas históricas"],
+    url: "https://www.booking.com/hotel/pt/grande-das-caldas-da-felgueira.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 19, name: "Pousada de Viseu", city: "Viseu", area: "Centro histórico", cat: "wellness",
+    lat: 40.6547, lng: -7.9125, total: 393.00, score: 9.0, stars: 4,
+    s_lifestyle: 9, s_services: 8, s_pool: 8, s_wellness: 7, s_route: 6,
+    facilities: ["Spa", "Sauna", "Jacuzzi", "Piscina exterior all-year", "Piscina interior", "Pousada"],
+    keyFacs: ["Pousada · Viseu centro", "Piscina all-year"],
+    url: "https://www.booking.com/hotel/pt/pousada-de-viseu.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
+  },
+  {
+    id: 20, name: "Hotel Do Parque Congress & SPA", city: "São Pedro do Sul", area: "Termas de S. Pedro do Sul", cat: "wellness",
+    lat: 40.7385, lng: -8.0939, total: 450.00, score: 8.0, stars: 4,
+    s_lifestyle: 5, s_services: 8, s_pool: 9, s_wellness: 10, s_route: 3,
+    facilities: ["Spa", "Sauna", "Hammam", "Jacuzzi", "Hot spring bath", "Steam room", "Piscina interior + exterior aquecidas"],
+    keyFacs: ["Spa + termas romanas", "Piscina aquecida"],
+    url: "https://www.booking.com/hotel/pt/do-parque-health-club-spa.html?checkin=2026-08-03&checkout=2026-08-06&group_adults=2"
   }
 ];
 
@@ -740,7 +788,7 @@ const SCENES = {
   wellness: `<svg viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="skyW" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#fde9d4"/><stop offset="100%" stop-color="#f0d8c4"/></linearGradient></defs><rect width="400" height="160" fill="url(#skyW)"/><polygon points="0,105 60,52 120,90 180,42 250,95 320,58 400,98 400,160 0,160" fill="#5d6e51"/><polygon points="0,118 70,80 140,108 210,75 280,112 350,88 400,118 400,160 0,160" fill="#4a5840"/><ellipse cx="100" cy="115" rx="62" ry="8" fill="#fdf0d8" opacity="0.35"/><ellipse cx="280" cy="120" rx="80" ry="6" fill="#fdf0d8" opacity="0.35"/><ellipse cx="200" cy="145" rx="135" ry="9" fill="#3a5269" opacity="0.85"/><ellipse cx="200" cy="143" rx="105" ry="5" fill="#5b8aa3" opacity="0.5"/><path d="M 150 128 Q 156 116 152 105" stroke="#fdf0d8" stroke-opacity="0.5" stroke-width="1.2" fill="none"/><path d="M 240 132 Q 247 119 244 108" stroke="#fdf0d8" stroke-opacity="0.5" stroke-width="1.2" fill="none"/><path d="M 200 124 Q 207 110 203 98" stroke="#fdf0d8" stroke-opacity="0.6" stroke-width="1.2" fill="none"/></svg>`
 };
 
-const STATE = { cat: "all", maxPrice: 140, minScore: 0, minRating: 0, sort: "score-desc", focusId: null };
+const STATE = { cat: "all", maxPrice: 160, minScore: 0, minRating: 0, sort: "score-desc", focusId: null };
 
 function scoreClass(s) { if (s >= 6.5) return "high"; if (s >= 5.7) return "mid"; return "low"; }
 function subScoreClass(s) { if (s >= 7) return "high"; if (s >= 4) return "mid"; return "low"; }
@@ -798,13 +846,13 @@ document.querySelectorAll("#sort-chips .chip").forEach(c => {
   };
 });
 document.getElementById("reset-btn").onclick = () => {
-  STATE.cat = "all"; STATE.maxPrice = 140; STATE.minScore = 0; STATE.minRating = 0; STATE.sort = "score-desc"; STATE.focusId = null;
+  STATE.cat = "all"; STATE.maxPrice = 160; STATE.minScore = 0; STATE.minRating = 0; STATE.sort = "score-desc"; STATE.focusId = null;
   document.querySelectorAll("#cat-chips .chip").forEach(x => x.classList.toggle("active", x.dataset.cat === "all"));
   document.querySelectorAll("#sort-chips .chip").forEach(x => x.classList.toggle("active", x.dataset.sort === "score-desc"));
-  document.getElementById("price-range").value = 140;
+  document.getElementById("price-range").value = 160;
   document.getElementById("score-range").value = 0;
   document.getElementById("rating-range").value = 0;
-  document.getElementById("price-val").textContent = "€140";
+  document.getElementById("price-val").textContent = "€160";
   document.getElementById("score-val").textContent = "Todos";
   document.getElementById("rating-val").textContent = "Todas";
   render();
