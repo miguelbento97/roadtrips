@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carregadores EV · Roadtrips 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --bg: #faf6f0; --bg-paper: #ffffff; --bg-sand: #f1e8d9;
+    --text: #2a2521; --text-dim: #6b625a; --text-faint: #a39b91;
+    --line: #e8dfd3; --line-soft: #f0e8dc;
+    --terracotta: #c97b5b; --sage: #7a8b6b; --sage-dark: #5d6e51;
+    --ocean: #3a5269; --gold: #c89d3a;
+    --dc-ultra: #3a5269; --dc-fast: #c97b5b; --ac: #7a8b6b; --schuko: #a39b91;
+    --highway: #8a7f6c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+
+  .hero {
+    padding: 46px 40px 26px;
+    background: linear-gradient(180deg, #f5ede0 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--line); position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; top: -40px; right: -40px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: radial-gradient(circle, #e8c977 0%, transparent 70%);
+    opacity: 0.3; pointer-events: none;
+  }
+  .eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 12px; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(26px, 4vw, 42px); letter-spacing: -0.02em; line-height: 1.05; margin-bottom: 12px; }
+  h1 em { font-style: italic; font-weight: 300; color: var(--terracotta); }
+  .specs { display: flex; gap: 20px; flex-wrap: wrap; font-size: 12px; color: var(--text-dim); }
+  .specs b { color: var(--text); font-weight: 500; }
+  .specs .sep { color: var(--text-faint); }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 28px 40px 60px; }
+
+  .filter-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px; }
+
+  /* Trip toggle — segmented */
+  .trip-toggle {
+    display: inline-flex; background: var(--bg-sand); border-radius: 100px;
+    padding: 4px; margin-bottom: 22px; gap: 4px;
+  }
+  .trip-tog {
+    padding: 11px 24px; border-radius: 100px; cursor: pointer;
+    font-size: 14px; font-weight: 600; color: var(--text-dim);
+    transition: all .18s; user-select: none; white-space: nowrap;
+  }
+  .trip-tog:hover { color: var(--text); }
+  .trip-tog.active { background: var(--bg-paper); color: var(--terracotta); box-shadow: 0 2px 8px rgba(42,37,33,0.08); }
+
+  /* Location toggle */
+  .toggles { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .tog {
+    font-size: 13px; padding: 10px 18px;
+    background: var(--bg-paper); border: 1px solid var(--line);
+    color: var(--text-dim); border-radius: 100px; cursor: pointer;
+    user-select: none; transition: all .15s; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tog:hover { color: var(--text); border-color: var(--text-faint); }
+  .tog.active { background: var(--terracotta); color: #fff; border-color: var(--terracotta); box-shadow: 0 2px 8px rgba(201,123,91,0.25); }
+  .tog .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--terracotta); }
+  .tog.active .dot { background: #fff; }
+  .tog.highway .dot { background: var(--highway); }
+  .tog.highway.active { background: var(--highway); border-color: var(--highway); }
+  .tog .count { font-size: 11px; opacity: 0.7; font-weight: 400; }
+
+  /* Type toggle — opt-in */
+  .type-toggles { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+  .type-tog {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 16px 9px 12px; border-radius: 100px;
+    border: 1.5px solid var(--line); cursor: pointer;
+    font-size: 13px; font-weight: 500; background: var(--bg-paper);
+    transition: all .15s; user-select: none;
+  }
+  .type-tog .ball {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid currentColor; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; transition: all .15s;
+  }
+  .type-tog .ball::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; transform: scale(0); transition: transform .15s; }
+  .type-tog.on .ball::after { transform: scale(1); }
+  .type-tog.on { border-color: currentColor; }
+  .type-tog.off { opacity: 0.4; }
+  .type-tog.off:hover { opacity: 0.7; }
+  .type-tog .tlabel { color: var(--text); }
+  .type-tog .tcount { font-size: 11px; color: var(--text-faint); font-weight: 400; }
+  .type-tog.dc-ultra { color: var(--dc-ultra); }
+  .type-tog.dc-fast  { color: var(--dc-fast); }
+  .type-tog.ac       { color: var(--sage-dark); }
+  .type-tog.schuko   { color: var(--schuko); }
+
+  .map-wrap { background: var(--bg-paper); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; height: 580px; position: relative; margin-bottom: 36px; }
+  #map { width: 100%; height: 100%; }
+
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .section-head h2 { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 400; letter-spacing: -0.01em; }
+  .section-head .hint { font-size: 12px; color: var(--text-faint); font-style: italic; }
+
+  .table-wrap { background: var(--bg-paper); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1000px; }
+  thead { background: var(--bg-sand); }
+  thead th {
+    padding: 14px 12px; text-align: left; font-weight: 600; color: var(--text);
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; user-select: none; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  thead th:hover { background: var(--line-soft); }
+  thead th .arr { display: inline-block; margin-left: 4px; color: var(--text-faint); font-size: 9px; }
+  thead th.sorted .arr { color: var(--terracotta); }
+  tbody tr { border-bottom: 1px solid var(--line-soft); transition: background .15s; }
+  tbody tr:hover { background: var(--bg-sand); }
+  tbody tr.hidden { display: none; }
+  tbody td { padding: 12px; vertical-align: middle; color: var(--text); }
+  tbody td.name { font-family: 'Fraunces', serif; font-size: 14px; font-weight: 500; }
+  .loc-pill { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+  .loc-pill.coimbra { background: #ebf0e6; color: var(--sage-dark); }
+  .loc-pill.amiar   { background: #fde9d4; color: var(--terracotta); }
+  .loc-pill.lousa   { background: #e8e9ed; color: var(--ocean); }
+  .loc-pill.tomar   { background: #fdf2d4; color: var(--gold); }
+  .loc-pill.tavira  { background: #d9ecec; color: #3a7676; }
+  .loc-pill.cabanas { background: #f6e3d4; color: #c0794a; }
+  .loc-pill.highway { background: #ece7dc; color: var(--highway); }
+  td.time-cell { font-family: 'Fraunces', serif; font-weight: 600; font-size: 15px; }
+  td.time-cell.fast { color: var(--sage-dark); }
+  td.time-cell.mid { color: var(--gold); }
+  td.time-cell.slow { color: var(--terracotta); }
+  td.time-cell.crawl { color: var(--text-faint); }
+  td.dist { font-weight: 500; color: var(--text-dim); }
+  td.power { font-weight: 500; }
+  .type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }
+  .type-badge.dcu { background: #e0e6ed; color: var(--ocean); }
+  .type-badge.dc  { background: #fde9d4; color: var(--terracotta); }
+  .type-badge.ac  { background: #e6ece1; color: var(--sage-dark); }
+  .type-badge.schuko { background: #ece8e0; color: var(--text-faint); }
+  .rel { font-size: 12px; }
+  .rel .stars { color: var(--gold); letter-spacing: 1px; }
+  .rel .note { font-size: 11px; color: var(--text-faint); display: block; line-height: 1.3; }
+  .link-cell a { color: var(--terracotta); text-decoration: none; font-weight: 600; }
+  .empty-row td { text-align: center; padding: 32px; color: var(--text-faint); font-style: italic; }
+
+  .pin {
+    width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 11px; font-weight: 700;
+    box-shadow: 0 3px 8px rgba(42,37,33,0.3); cursor: pointer; transition: transform .15s;
+  }
+  .pin:hover { transform: scale(1.18); }
+  .pin.sleep { width: 32px; height: 32px; background: var(--terracotta); font-size: 13px; box-shadow: 0 4px 12px rgba(201,123,91,0.4); }
+  .pin.home { width: 32px; height: 32px; background: var(--text); font-size: 12px; }
+  .pin.ac { background: var(--ac); }
+  .pin.dc-fast { background: var(--dc-fast); }
+  .pin.dc-ultra { background: var(--dc-ultra); }
+  .pin.schuko { background: var(--schuko); }
+
+  .leaflet-container { background: var(--bg-paper); font-family: 'Inter', sans-serif; }
+  .leaflet-popup-content-wrapper { background: var(--bg-paper); border-radius: 10px; box-shadow: 0 8px 24px rgba(42,37,33,0.15); padding: 0; border: 1px solid var(--line); }
+  .leaflet-popup-content { margin: 0; padding: 14px 16px; min-width: 230px; }
+  .leaflet-popup-tip { background: var(--bg-paper); }
+  .pn { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .pl { font-size: 11px; color: var(--text-dim); margin-bottom: 8px; }
+  .pr { display: flex; gap: 8px; margin-bottom: 6px; font-size: 11px; align-items: center; }
+  .pcta { display: inline-block; background: var(--text); color: var(--bg); padding: 6px 12px; border-radius: 100px; text-decoration: none; font-size: 11px; font-weight: 500; margin-top: 6px; }
+
+  footer { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 11px; color: var(--text-faint); line-height: 1.7; }
+
+  @media (max-width: 720px) {
+    .hero { padding: 30px 20px 18px; }
+    .container { padding: 22px 20px 50px; }
+    .map-wrap { height: 480px; }
+    .trip-tog { padding: 10px 16px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">Roadtrips 2026 · EV planning</div>
+  <h1>Carregadores <em>das duas viagens</em></h1>
+  <div class="specs">
+    <span><b>Carro:</b> Peugeot e-208</span>
+    <span class="sep">·</span>
+    <span><b>Bateria útil:</b> ~46 kWh</span>
+    <span class="sep">·</span>
+    <span><b>AC max:</b> 11 kW</span>
+    <span class="sep">·</span>
+    <span><b>DC max:</b> ~100 kW (pico)</span>
+    <span class="sep">·</span>
+    <span><b>Tempo:</b> 20% → 80% (~28 kWh)</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="filter-label">Viagem</div>
+  <div class="trip-toggle" id="trip-toggle"></div>
+
+  <div class="filter-label">Local · alojamentos + autoestrada</div>
+  <div class="toggles" id="toggles"></div>
+
+  <div class="filter-label">Tipo de carregador · liga/desliga</div>
+  <div class="type-toggles" id="type-toggles"></div>
+
+  <div class="map-wrap"><div id="map"></div></div>
+
+  <div class="section-head">
+    <h2>Tabela detalhada</h2>
+    <span class="hint">Clica num cabeçalho para ordenar · usa os toggles para filtrar</span>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table id="ctable">
+        <thead>
+          <tr>
+            <th data-col="name">Estação <span class="arr">↕</span></th>
+            <th data-col="loc">Local <span class="arr">↕</span></th>
+            <th data-col="dist" data-type="num" class="sorted">Distância <span class="arr">↑</span></th>
+            <th data-col="power" data-type="num">Potência est. <span class="arr">↕</span></th>
+            <th data-col="cat">Tipo <span class="arr">↕</span></th>
+            <th data-col="time" data-type="num">Tempo 20→80% <span class="arr">↕</span></th>
+            <th data-col="rel" data-type="num">Fiabilidade <span class="arr">↕</span></th>
+            <th>Mapa</th>
+          </tr>
+        </thead>
+        <tbody id="ctbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <b>Distância:</b> para carregadores de alojamento é a distância ao alojamento; para carregadores de autoestrada (🛣) é a distância a partir de Cacém (indica o ponto da viagem).<br>
+    <b>Notas:</b> Potências "est." são inferidas pela rede/localização — confirma na app MIIO, IONITY ou Tesla. O e-208 limita o AC a 11 kW e o DC a ~100 kW de pico (média real 20-80% ~50-62 kW). Tesla Superchargers em PT estão abertos a não-Tesla via app Tesla. Reviews do Google Maps, podem estar desatualizadas.<br><br>
+    Dados: Maio 2026 · 58 carregadores · 2 viagens · 6 alojamentos · raio 50 km · estimativas para Peugeot e-208 · Mapa: CartoDB Voyager
+  </footer>
+</div>
+
+<script>
+const HOME = { lat: 38.7722, lng: -9.2923, label: "Cacém (partida)" };
+
+const TRIPS = [
+  {
+    id: "geres", label: "Gerês / Tomar · Agosto",
+    center: [40.0, -8.4], zoom: 7,
+    spots: [
+      { id: "coimbra", short: "Coimbra", label: "Coimbra · Hotel Moderna",       lat: 40.2092, lng: -8.4306 },
+      { id: "amiar",   short: "Amiar",   label: "Amiar · Vivenda das Carvalhas",  lat: 41.6705, lng: -7.9346 },
+      { id: "lousa",   short: "Lousã",   label: "Lousã · Fragas do Cabril",       lat: 40.1762, lng: -8.1790 },
+      { id: "tomar",   short: "Tomar",   label: "Tomar · centro",                  lat: 39.6040, lng: -8.4180 }
+    ]
+  },
+  {
+    id: "algarve", label: "Algarve · Junho",
+    center: [38.0, -8.2], zoom: 7,
+    spots: [
+      { id: "tavira",  short: "Tavira",  label: "Tavira · centro",                 lat: 37.1270, lng: -7.6480 },
+      { id: "cabanas", short: "Cabanas", label: "Cabanas de Tavira",               lat: 37.1370, lng: -7.5950 }
+    ]
+  }
+];
+
+// trip · loc (spot id OR "highway") · type AC|DC|schuko
+const CHARGERS = [
+  // ═══ GERÊS TRIP — COIMBRA ═══
+  { trip:"geres", loc:"coimbra", name:"Powerdot · Av. Fernão de Magalhães",      lat:40.2160, lng:-8.4365, power:22,  type:"AC",     rel:5, note:"1 review positiva" },
+  { trip:"geres", loc:"coimbra", name:"Prio · Av. Lousã",                         lat:40.2035, lng:-8.4254, power:35,  type:"DC",     rel:2, note:"35kW max · reviews mistas" },
+  { trip:"geres", loc:"coimbra", name:"Iberdrola/bp pulse · Av. Inês de Castro", lat:40.2012, lng:-8.4308, power:22,  type:"AC",     rel:2, note:"Cobra mas não inicia" },
+  { trip:"geres", loc:"coimbra", name:"MOBI.E · LIDL R. Manuel Almeida e Sousa", lat:40.2273, lng:-8.4387, power:50,  type:"DC",     rel:3, note:"CCS+CHAdeMO+Type2 · DC 50kW" },
+  { trip:"geres", loc:"coimbra", name:"MOBI.E · R. Arco Pintado",                 lat:40.2205, lng:-8.4387, power:22,  type:"AC",     rel:4, note:"\"Finalmente um que funciona\"" },
+  { trip:"geres", loc:"coimbra", name:"MOBI.E · Celas",                            lat:40.2155, lng:-8.4141, power:22,  type:"AC",     rel:3, note:"Sem reviews" },
+  { trip:"geres", loc:"coimbra", name:"Continente Plug&Charge",                    lat:40.2125, lng:-8.4340, power:50,  type:"DC",     rel:1, note:"Requer cartão Continente · evitar" },
+  { trip:"geres", loc:"coimbra", name:"Atlante · Av. José R. Sousa Fernandes",    lat:40.2354, lng:-8.4167, power:50,  type:"DC",     rel:3, note:"Rede Atlante" },
+  { trip:"geres", loc:"coimbra", name:"Tesla Supercharger · Mealhada ⚡⚡",        lat:40.3731, lng:-8.4805, power:250, type:"DC",     rel:5, note:"150kW+ · 4.8★ (581) · ~19km de Coimbra · restaurante de leitão" },
+  // ═══ GERÊS — AMIAR ═══
+  { trip:"geres", loc:"amiar",   name:"Iberdrola · Salto",                         lat:41.6408, lng:-7.9464, power:22,  type:"AC",     rel:3, note:"MAIS PRÓXIMO (4km) · reviews mistas" },
+  { trip:"geres", loc:"amiar",   name:"LIDL Vieira do Minho ⚡",                   lat:41.6368, lng:-8.1420, power:50,  type:"DC",     rel:4, note:"CCS+CHAdeMO+Type2 · DC 50kW" },
+  { trip:"geres", loc:"amiar",   name:"Tesla Supercharger · Ribeira de Pena ⚡⚡", lat:41.5033, lng:-7.8012, power:150, type:"DC",     rel:5, note:"~150kW · 4.6★ (135) · aberto a não-Tesla" },
+  { trip:"geres", loc:"amiar",   name:"MOBI.E · Cabeceiras (Fonte S. João)",      lat:41.5148, lng:-7.9904, power:22,  type:"AC",     rel:3, note:"24h · sem reviews" },
+  { trip:"geres", loc:"amiar",   name:"MOBI.E · Cabeceiras (Av. R.D. Manuel)",    lat:41.5076, lng:-7.9892, power:22,  type:"AC",     rel:2, note:"2★ · usa app miio" },
+  { trip:"geres", loc:"amiar",   name:"KLC/Shell Recharge · Vila Real",            lat:41.2933, lng:-7.7359, power:50,  type:"DC",     rel:5, note:"DC 50kW · 5★ · limite do raio 50km" },
+  { trip:"geres", loc:"amiar",   name:"Powerdot · Boticas",                        lat:41.6870, lng:-7.6672, power:22,  type:"AC",     rel:5, note:"Backup oriental" },
+  { trip:"geres", loc:"amiar",   name:"Iberdrola · Montalegre vila",               lat:41.8232, lng:-7.7917, power:22,  type:"AC",     rel:2, note:"Ecrã avariado · evitar" },
+  // ═══ GERÊS — LOUSÃ ═══
+  { trip:"geres", loc:"lousa",   name:"MOBI.E · R. Gil Vicente",                   lat:40.1183, lng:-8.2422, power:22,  type:"AC",     rel:3, note:"Lousã centro" },
+  { trip:"geres", loc:"lousa",   name:"MOBI.E · R. Coimbra 2",                     lat:40.1191, lng:-8.2495, power:22,  type:"AC",     rel:3, note:"Lousã centro" },
+  { trip:"geres", loc:"lousa",   name:"MOBI.E · R. Imprensa 22",                   lat:40.1116, lng:-8.2508, power:22,  type:"AC",     rel:3, note:"Lousã centro" },
+  { trip:"geres", loc:"lousa",   name:"MOBI.E · R. Inês de Castro 1",              lat:40.1102, lng:-8.2499, power:22,  type:"AC",     rel:3, note:"Lousã centro" },
+  { trip:"geres", loc:"lousa",   name:"MOBI.E · R. Dr. F.F. Costa",                lat:40.1144, lng:-8.2446, power:22,  type:"AC",     rel:1, note:"1★ · \"não funciona\"" },
+  { trip:"geres", loc:"lousa",   name:"MOBI.E · Talasnal (aldeia)",                lat:40.0937, lng:-8.1965, power:4,   type:"schuko", rel:2, note:"Schuko lento 4kW · só p/ dormir" },
+  { trip:"geres", loc:"lousa",   name:"MOBI.E · Miranda do Corvo",                 lat:40.0914, lng:-8.3262, power:22,  type:"AC",     rel:2, note:"Tempestade desligou" },
+  { trip:"geres", loc:"lousa",   name:"Moeve · Condeixa-a-Nova ⚡",                lat:40.1148, lng:-8.5034, power:100, type:"DC",     rel:4, note:"DC rápido · 4.5★ · a caminho de Coimbra" },
+  { trip:"geres", loc:"lousa",   name:"Atlante · Condeixa-a-Nova",                 lat:40.1080, lng:-8.5111, power:60,  type:"DC",     rel:3, note:"DC rápido · a caminho de Coimbra" },
+  { trip:"geres", loc:"lousa",   name:"Powerdot · Condeixa (Francisco de Lemos)", lat:40.1175, lng:-8.4966, power:60,  type:"DC",     rel:5, note:"DC rápido · 5★ · a caminho de Coimbra" },
+  // ═══ GERÊS — TOMAR ═══
+  { trip:"geres", loc:"tomar",   name:"Atlante · R. Coimbra (Tomar) ⚡",           lat:39.6102, lng:-8.4036, power:60,  type:"DC",     rel:4, note:"DC rápido NA cidade · ~1.5km do centro" },
+  { trip:"geres", loc:"tomar",   name:"MOBI.E · Av. Tamagnini de Abreu",           lat:39.6007, lng:-8.4142, power:22,  type:"AC",     rel:3, note:"Mais central · zona histórica" },
+  { trip:"geres", loc:"tomar",   name:"MOBI.E · R. Arcos 1",                        lat:39.6021, lng:-8.4119, power:22,  type:"AC",     rel:3, note:"Centro" },
+  { trip:"geres", loc:"tomar",   name:"MOBI.E · Alameda Um de Março 45",           lat:39.6048, lng:-8.4087, power:22,  type:"AC",     rel:5, note:"5★ · \"sem problema\"" },
+  { trip:"geres", loc:"tomar",   name:"MOBI.E · R. Dr. Joaquim Ribeiro",           lat:39.5995, lng:-8.4118, power:22,  type:"AC",     rel:3, note:"Centro" },
+  { trip:"geres", loc:"tomar",   name:"MOBI.E · R. Rio Nabão",                     lat:39.6003, lng:-8.4104, power:22,  type:"AC",     rel:3, note:"Centro" },
+  { trip:"geres", loc:"tomar",   name:"MOBI.E · R. Amorim Rosa",                   lat:39.6036, lng:-8.4075, power:22,  type:"AC",     rel:3, note:"Centro" },
+  { trip:"geres", loc:"tomar",   name:"MOBI.E · R. Carlos Pereira",                lat:39.6076, lng:-8.4045, power:22,  type:"AC",     rel:3, note:"Centro" },
+  { trip:"geres", loc:"tomar",   name:"MOBI.E · R. Santa Iria",                    lat:39.6029, lng:-8.4090, power:22,  type:"AC",     rel:1, note:"1★ · interrompeu carga" },
+  // ═══ GERÊS — AUTOESTRADA (A1 / A24 / A7) ═══
+  { trip:"geres", loc:"highway", name:"IONITY · Estarreja (A1 norte) ⚡⚡",         lat:40.7807, lng:-8.5662, power:350, type:"DC",     rel:5, note:"A1 · 4.8★ · ultra-rápido" },
+  { trip:"geres", loc:"highway", name:"IONITY · Albergaria-a-Velha (A1/A25) ⚡⚡",  lat:40.6779, lng:-8.4722, power:350, type:"DC",     rel:4, note:"A1/A25 · 6 postos · paragem-chave para o leg até Amiar" },
+  { trip:"geres", loc:"highway", name:"Galp · A1 km167 (Pombal) ⚡",                lat:40.0150, lng:-8.6005, power:50,  type:"DC",     rel:3, note:"A1 área serviço · reviews mistas · novos postos 400kW a caminho" },
+  { trip:"geres", loc:"highway", name:"IONITY · Leiria/Fátima A1 ⚡⚡",             lat:39.7128, lng:-8.7115, power:350, type:"DC",     rel:4, note:"A1 área serviço · 6 postos · caro mas top" },
+  { trip:"geres", loc:"highway", name:"Tesla Supercharger · Fátima ⚡⚡",            lat:39.6356, lng:-8.6883, power:250, type:"DC",     rel:5, note:"Junto à A1 · 4.8★ (887) · o maior da zona · aberto a não-Tesla" },
+  // ─── Gerês · alternativas à beira da A1 (perto das saídas) ───
+  { trip:"geres", loc:"highway", name:"LIDL · Santarém (saída A1)",                lat:39.2394, lng:-8.6966, power:50,  type:"DC",     rel:3, note:"ALTERNATIVA · DC 50kW · ~5min da saída A1 Santarém · 24h · supermercado" },
+  { trip:"geres", loc:"highway", name:"MOBI.E · Leiria (R. Santo André)",          lat:39.7412, lng:-8.7961, power:50,  type:"DC",     rel:3, note:"ALTERNATIVA · 4 postos rápidos CCS+CHAdeMO · mesmo junto à saída A1, perto de hospital e centro comercial" },
+  { trip:"geres", loc:"highway", name:"Powerdot · Leiria (Virgílio V. da Cunha)",  lat:39.7467, lng:-8.8210, power:40,  type:"DC",     rel:4, note:"ALTERNATIVA · DC 40kW CCS · 4.7★ · estacionamento amplo · saída A1 Leiria" },
+
+  // ═══ ALGARVE TRIP — TAVIRA ═══
+  { trip:"algarve", loc:"tavira", name:"Atlante · N125 Tavira ⚡",                  lat:37.1236, lng:-7.6602, power:50,  type:"DC",     rel:2, note:"Único DC fast de Tavira · frequentemente ocupado" },
+  { trip:"algarve", loc:"tavira", name:"Atlante · R. Cmte. Henrique de Brito",     lat:37.1267, lng:-7.6449, power:50,  type:"DC",     rel:4, note:"Shell Recharge · paga ao minuto" },
+  { trip:"algarve", loc:"tavira", name:"Atlante · Continente (Cândido dos Reis)",  lat:37.1308, lng:-7.6367, power:22,  type:"AC",     rel:3, note:"AC no parque do Continente nível -2 · ok p/ compras" },
+  { trip:"algarve", loc:"tavira", name:"Galp · N125 Tavira",                        lat:37.1179, lng:-7.6628, power:50,  type:"DC",     rel:2, note:"DC 50kW · só app Galp (precisa NIF) · pouco fiável" },
+  // ═══ ALGARVE — CABANAS DE TAVIRA ═══
+  { trip:"algarve", loc:"cabanas", name:"MOBI.E · Pedras da Rainha (Cabanas)",     lat:37.1392, lng:-7.6018, power:22,  type:"AC",     rel:3, note:"Em Cabanas · aldeamento turístico" },
+  { trip:"algarve", loc:"cabanas", name:"MOBI.E · Golden Clube",                    lat:37.1326, lng:-7.6083, power:22,  type:"AC",     rel:3, note:"Perto de Cabanas · AC" },
+  // ═══ ALGARVE — AUTOESTRADA (A2 / A22) ═══
+  { trip:"algarve", loc:"highway", name:"IONITY · Marateca (A2 km31) ⚡⚡",          lat:38.5791, lng:-8.6782, power:350, type:"DC",     rel:4, note:"A2 · saída de Lisboa · 6 postos · ~2km da AE" },
+  { trip:"algarve", loc:"highway", name:"Tesla Supercharger · Alcácer do Sal ⚡⚡",  lat:38.3919, lng:-8.5138, power:250, type:"DC",     rel:4, note:"A2 · V4 até 500kW · 14 postos · o maior do Alentejo · filas no verão" },
+  { trip:"algarve", loc:"highway", name:"Galp · Aljustrel A2 km148 ⚡⚡",            lat:37.9236, lng:-8.2421, power:400, type:"DC",     rel:3, note:"A2 · 12 postos até 400kW · cobertura · ~150kW real" },
+  { trip:"algarve", loc:"highway", name:"IONITY · Almodôvar A2 km193 ⚡⚡",          lat:37.5363, lng:-8.1829, power:350, type:"DC",     rel:4, note:"A2 · último grande antes do Algarve · 6 postos 150kW+" },
+  { trip:"algarve", loc:"highway", name:"Moeve · A22 km97 (Moncarapacho) ⚡",       lat:37.1243, lng:-7.7711, power:100, type:"DC",     rel:4, note:"A22 · ~13km de Tavira · rápido e simples" },
+  // ─── Algarve · alternativas à beira da A2 (perto das saídas) ───
+  { trip:"algarve", loc:"highway", name:"EDP · Grândola A2 km111 ⚡⚡",              lat:38.1671, lng:-8.4909, power:150, type:"DC",     rel:3, note:"ALTERNATIVA · A2 área serviço Repsol · ~160kW Via Verde · preenche o vão Alcácer–Aljustrel" },
+  { trip:"algarve", loc:"highway", name:"Galp · Alcácer do Sal (LIDL, na vila)",   lat:38.3802, lng:-8.5130, power:50,  type:"DC",     rel:2, note:"ALTERNATIVA ao Tesla SC quando há fila · parque do LIDL · reviews mistas" },
+  { trip:"algarve", loc:"highway", name:"Galp · Castro Verde (na vila)",            lat:37.7062, lng:-8.0850, power:50,  type:"DC",     rel:4, note:"ALTERNATIVA · paragem a meio do Alentejo · 5★ \"bem localizado\" · junto ao LIDL" }
+];
+
+// ── Derived ─────────────────────────────────────────────
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371, toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2-lat1), dLng = toRad(lng2-lng1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+function e208kw(c) {
+  if (c.type === "schuko") return 4;
+  if (c.type === "AC") return 11;
+  if (c.power >= 150) return 62;
+  if (c.power >= 100) return 58;
+  if (c.power >= 50)  return 45;
+  return Math.min(c.power, 33);
+}
+function category(c) {
+  if (c.type === "schuko") return "schuko";
+  if (c.type === "AC") return "ac";
+  if (c.power >= 150) return "dc-ultra";
+  return "dc-fast";
+}
+function spotById(trip, id) { return TRIPS.find(t=>t.id===trip).spots.find(s=>s.id===id); }
+
+CHARGERS.forEach(c => {
+  if (c.loc === "highway") {
+    c.dist = haversine(HOME.lat, HOME.lng, c.lat, c.lng);   // from Cacém
+    c.distFrom = "Cacém";
+  } else {
+    const s = spotById(c.trip, c.loc);
+    c.dist = haversine(s.lat, s.lng, c.lat, c.lng);
+    c.distFrom = "alojamento";
+  }
+  c.cat = category(c);
+  c.e208 = e208kw(c);
+  c.time = Math.round(28 / c.e208 * 60);
+});
+
+const TYPE_DEFS = [
+  { id:"dc-ultra", label:"DC Ultra",  desc:"150+ kW" },
+  { id:"dc-fast",  label:"DC Rápido", desc:"35–100 kW" },
+  { id:"ac",       label:"AC",        desc:"até 22 kW" },
+  { id:"schuko",   label:"Schuko",    desc:"lento" }
+];
+
+const STATE = {
+  trip: "geres",
+  loc: "all",
+  types: new Set(["dc-ultra","dc-fast","ac","schuko"])
+};
+
+// ── Helpers ─────────────────────────────────────────────
+function timeClass(m){ if(m<50)return"fast"; if(m<120)return"mid"; if(m<240)return"slow"; return"crawl"; }
+function typeBadge(c){
+  if(c.cat==="schuko")  return `<span class="type-badge schuko">Schuko</span>`;
+  if(c.cat==="dc-ultra")return `<span class="type-badge dcu">DC ${c.power}kW</span>`;
+  if(c.cat==="dc-fast") return `<span class="type-badge dc">DC ${c.power}kW</span>`;
+  return `<span class="type-badge ac">AC ${c.power}kW</span>`;
+}
+function fmtTime(m){ if(m<60)return m+" min"; const h=Math.floor(m/60),x=m%60; return x===0?`${h}h`:`${h}h${String(x).padStart(2,"0")}`; }
+function fmtDist(km){ return km<1?Math.round(km*1000)+" m":km.toFixed(1)+" km"; }
+function stars(n){ return "★".repeat(n)+'<span style="opacity:0.25">'+"★".repeat(5-n)+"</span>"; }
+function locShort(c){ return c.loc==="highway" ? "🛣 Estrada" : spotById(c.trip,c.loc).short; }
+function isVisible(c){
+  return c.trip===STATE.trip
+      && (STATE.loc==="all" || c.loc===STATE.loc)
+      && STATE.types.has(c.cat);
+}
+
+// ── Trip toggle ─────────────────────────────────────────
+const tripToggleEl = document.getElementById("trip-toggle");
+TRIPS.forEach(t => {
+  const el = document.createElement("div");
+  el.className = "trip-tog" + (t.id===STATE.trip?" active":"");
+  el.dataset.trip = t.id;
+  el.textContent = t.label;
+  el.onclick = () => setTrip(t.id);
+  tripToggleEl.appendChild(el);
+});
+function setTrip(id){
+  STATE.trip = id; STATE.loc = "all";
+  document.querySelectorAll(".trip-tog").forEach(e=>e.classList.toggle("active", e.dataset.trip===id));
+  renderLocToggles();
+  renderTypeToggles();
+  applyFilter();
+}
+
+// ── Location toggle (rebuilds per trip) ─────────────────
+const togglesEl = document.getElementById("toggles");
+function renderLocToggles(){
+  const trip = TRIPS.find(t=>t.id===STATE.trip);
+  const all = CHARGERS.filter(c=>c.trip===STATE.trip);
+  togglesEl.innerHTML = "";
+  const allBtn = document.createElement("div");
+  allBtn.className = "tog" + (STATE.loc==="all"?" active":"");
+  allBtn.innerHTML = `<span class="dot"></span>Todos <span class="count">(${all.length})</span>`;
+  allBtn.onclick = () => setLoc("all");
+  togglesEl.appendChild(allBtn);
+  trip.spots.forEach(s => {
+    const n = all.filter(c=>c.loc===s.id).length;
+    const btn = document.createElement("div");
+    btn.className = "tog" + (STATE.loc===s.id?" active":"");
+    btn.dataset.loc = s.id;
+    btn.innerHTML = `<span class="dot"></span>${s.short} <span class="count">(${n})</span>`;
+    btn.onclick = () => setLoc(s.id);
+    togglesEl.appendChild(btn);
+  });
+  const hwN = all.filter(c=>c.loc==="highway").length;
+  const hw = document.createElement("div");
+  hw.className = "tog highway" + (STATE.loc==="highway"?" active":"");
+  hw.dataset.loc = "highway";
+  hw.innerHTML = `<span class="dot"></span>🛣 Autoestrada <span class="count">(${hwN})</span>`;
+  hw.onclick = () => setLoc("highway");
+  togglesEl.appendChild(hw);
+}
+function setLoc(loc){
+  STATE.loc = loc;
+  document.querySelectorAll("#toggles .tog").forEach(t=>{
+    const active = (loc==="all" && !t.dataset.loc) || t.dataset.loc===loc;
+    t.classList.toggle("active", active);
+  });
+  applyFilter();
+}
+
+// ── Type toggle ─────────────────────────────────────────
+const typeTogglesEl = document.getElementById("type-toggles");
+function renderTypeToggles(){
+  typeTogglesEl.innerHTML = "";
+  TYPE_DEFS.forEach(t => {
+    const n = CHARGERS.filter(c=>c.trip===STATE.trip && c.cat===t.id).length;
+    const el = document.createElement("div");
+    el.className = `type-tog ${t.id} ` + (STATE.types.has(t.id)?"on":"off");
+    el.dataset.type = t.id;
+    el.innerHTML = `<span class="ball"></span><span class="tlabel">${t.label}</span><span class="tcount">${t.desc} · ${n}</span>`;
+    el.onclick = () => {
+      if (STATE.types.has(t.id)) STATE.types.delete(t.id);
+      else STATE.types.add(t.id);
+      el.classList.toggle("on", STATE.types.has(t.id));
+      el.classList.toggle("off", !STATE.types.has(t.id));
+      applyFilter();
+    };
+    typeTogglesEl.appendChild(el);
+  });
+}
+
+// ── Map ─────────────────────────────────────────────────
+const map = L.map("map", { zoomControl: true }).setView([40.0,-8.4], 7);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+  attribution:'&copy; OpenStreetMap, &copy; CARTO', maxZoom:18
+}).addTo(map);
+
+// Home marker
+const homeIcon = L.divIcon({ html:`<div class="pin home">⌂</div>`, className:"", iconSize:[32,32], iconAnchor:[16,16] });
+const homeMarker = L.marker([HOME.lat,HOME.lng], { icon:homeIcon, zIndexOffset:1100 });
+homeMarker.bindPopup(`<div class="pn">${HOME.label}</div><div class="pl">Ponto de partida das duas viagens</div>`);
+
+// Sleep markers
+const sleepMarkers = [];
+TRIPS.forEach(trip => trip.spots.forEach(s => {
+  const icon = L.divIcon({ html:`<div class="pin sleep">⌂</div>`, className:"", iconSize:[32,32], iconAnchor:[16,16] });
+  const m = L.marker([s.lat,s.lng], { icon, zIndexOffset:1000 });
+  m.bindPopup(`<div class="pn">${s.label}</div><div class="pl">Alojamento</div>`);
+  sleepMarkers.push({ marker:m, trip:trip.id, loc:s.id });
+}));
+
+// Charger markers
+const chargerMarkers = [];
+CHARGERS.forEach(c => {
+  const letter = c.cat==="schuko" ? "S" : (c.cat==="ac" ? "A" : "D");
+  const icon = L.divIcon({ html:`<div class="pin ${c.cat}">${letter}</div>`, className:"", iconSize:[26,26], iconAnchor:[13,13] });
+  const m = L.marker([c.lat,c.lng], { icon });
+  m.bindPopup(`
+    <div class="pn">${c.name}</div>
+    <div class="pl">${locShort(c)} · ${fmtDist(c.dist)} ${c.loc==="highway"?"de Cacém":""}</div>
+    <div class="pr">${typeBadge(c)} · <b>${fmtTime(c.time)}</b> (20→80%)</div>
+    <div class="pl">${c.note}</div>
+    <a class="pcta" href="https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}" target="_blank">Abrir no Maps</a>
+  `);
+  chargerMarkers.push({ marker:m, charger:c });
+});
+
+// ── Filter ──────────────────────────────────────────────
+function applyFilter(){
+  const bounds = [];
+  chargerMarkers.forEach(({marker,charger}) => {
+    const vis = isVisible(charger);
+    if (vis) { if(!map.hasLayer(marker)) marker.addTo(map); bounds.push([charger.lat,charger.lng]); }
+    else { if(map.hasLayer(marker)) map.removeLayer(marker); }
+  });
+  sleepMarkers.forEach(({marker,trip,loc}) => {
+    const vis = trip===STATE.trip && (STATE.loc==="all" || STATE.loc===loc);
+    if (vis) { if(!map.hasLayer(marker)) marker.addTo(map); const ll=marker.getLatLng(); bounds.push([ll.lat,ll.lng]); }
+    else { if(map.hasLayer(marker)) map.removeLayer(marker); }
+  });
+  // Home: show for trip-level or highway view
+  const showHome = STATE.loc==="all" || STATE.loc==="highway";
+  if (showHome) { if(!map.hasLayer(homeMarker)) homeMarker.addTo(map); bounds.push([HOME.lat,HOME.lng]); }
+  else { if(map.hasLayer(homeMarker)) map.removeLayer(homeMarker); }
+
+  if (bounds.length > 1) map.fitBounds(bounds, { padding:[45,45], maxZoom:12 });
+  else if (bounds.length === 1) map.setView(bounds[0], 12);
+  else { const t=TRIPS.find(x=>x.id===STATE.trip); map.setView(t.center, t.zoom); }
+
+  // Table
+  let shown = 0;
+  document.querySelectorAll("#ctbody tr[data-idx]").forEach(tr => {
+    const c = CHARGERS[+tr.dataset.idx];
+    const vis = isVisible(c);
+    tr.classList.toggle("hidden", !vis);
+    if (vis) shown++;
+  });
+  const er = document.getElementById("empty-row");
+  if (er) er.style.display = shown===0 ? "" : "none";
+}
+
+// ── Table ───────────────────────────────────────────────
+const TABLE_STATE = { col:"dist", dir:"asc", type:"num" };
+function renderTable(){
+  const idx = CHARGERS.map((c,i)=>i);
+  idx.sort((ia,ib)=>{
+    const a=CHARGERS[ia], b=CHARGERS[ib];
+    let av=a[TABLE_STATE.col], bv=b[TABLE_STATE.col];
+    if (TABLE_STATE.col==="loc"){ av=locShort(a); bv=locShort(b); }
+    if (TABLE_STATE.type==="num") return TABLE_STATE.dir==="asc"?av-bv:bv-av;
+    return TABLE_STATE.dir==="asc"?String(av).localeCompare(String(bv),"pt"):String(bv).localeCompare(String(av),"pt");
+  });
+  const tbody = document.getElementById("ctbody");
+  tbody.innerHTML = idx.map(i=>{
+    const c = CHARGERS[i];
+    return `
+      <tr data-idx="${i}">
+        <td class="name">${c.name}</td>
+        <td><span class="loc-pill ${c.loc}">${locShort(c)}</span></td>
+        <td class="dist">${fmtDist(c.dist)}</td>
+        <td class="power">${c.power} kW</td>
+        <td>${typeBadge(c)}</td>
+        <td class="time-cell ${timeClass(c.time)}">${fmtTime(c.time)}</td>
+        <td class="rel"><span class="stars">${stars(c.rel)}</span><span class="note">${c.note}</span></td>
+        <td class="link-cell"><a href="https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}" target="_blank">↗</a></td>
+      </tr>`;
+  }).join("") + `<tr id="empty-row" class="empty-row" style="display:none"><td colspan="8">Nenhum carregador com estes filtros — liga mais tipos ou muda de local.</td></tr>`;
+
+  document.querySelectorAll("#ctable thead th").forEach(th=>{
+    th.classList.remove("sorted");
+    const arr = th.querySelector(".arr");
+    if(!arr) return;
+    if(th.dataset.col===TABLE_STATE.col){ th.classList.add("sorted"); arr.textContent=TABLE_STATE.dir==="asc"?"↑":"↓"; }
+    else arr.textContent="↕";
+  });
+  applyFilter();
+}
+document.querySelectorAll("#ctable thead th[data-col]").forEach(th=>{
+  th.onclick = () => {
+    const col=th.dataset.col, type=th.dataset.type||"str";
+    if(TABLE_STATE.col===col) TABLE_STATE.dir=TABLE_STATE.dir==="asc"?"desc":"asc";
+    else { TABLE_STATE.col=col; TABLE_STATE.type=type; TABLE_STATE.dir="asc"; }
+    renderTable();
+  };
+});
+
+// ── Init ────────────────────────────────────────────────
+renderLocToggles();
+renderTypeToggles();
+renderTable();
+</script>
+</body>
+</html>
